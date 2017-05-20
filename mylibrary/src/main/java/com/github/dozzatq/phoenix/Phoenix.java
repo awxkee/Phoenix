@@ -126,6 +126,11 @@ public class Phoenix {
         return FileProvider.getUriForFile(getContext(), getPackageName() + ".fileprovider", file);
     }
 
+    public Uri getExposedUri(File toExpose)
+    {
+        return FileProvider.getUriForFile(getContext(), getPackageName() + ".fileprovider", toExpose);
+    }
+
     public Phoenix stopService(Intent intentService)
     {
         getContext().stopService(intentService);
