@@ -13,7 +13,7 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.Window;
 
-import com.github.dozzatq.R;
+import com.github.dozzatq.phoenix.R;
 
 public class PhoenixShareActivity extends AppCompatActivity {
 

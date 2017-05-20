@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.github.dozzatq">
+    package="com.github.dozzatq.phoenix">
 
     <application
         android:allowBackup="true"
@@ -7,7 +7,7 @@
         <activity
             android:name="com.github.dozzatq.phoenix.share.PhoenixShareActivity"
             android:theme="@style/Blaze.AppTheme"/>
-        <service android:name=".phoenix.PhoenixDownloader.PhoenixDownloaderService"
+        <service android:name=".PhoenixDownloader.PhoenixDownloaderService"
             android:exported="false"/>
     </application>
 

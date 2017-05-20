@@ -17,7 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.dozzatq.R;
+import com.github.dozzatq.phoenix.R;
 
 import java.util.List;
 

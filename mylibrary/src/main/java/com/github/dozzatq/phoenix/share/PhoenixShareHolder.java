@@ -5,7 +5,7 @@ import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.github.dozzatq.R;
+import com.github.dozzatq.phoenix.R;
 
 /**
  * Created by RondailP on 04.10.2016.
