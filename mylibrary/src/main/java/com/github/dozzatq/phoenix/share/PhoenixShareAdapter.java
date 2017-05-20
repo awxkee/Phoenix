@@ -94,7 +94,7 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return blazeShareHolder;
     }
 
-    int mCurrentSelectedPosition = -1;
+    private int mCurrentSelectedPosition = -1;
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
