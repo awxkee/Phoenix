@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.github.dozzatq">
+
+    <application
+        android:allowBackup="true"
+        android:supportsRtl="true">
+        <activity
+            android:name="com.github.dozzatq.phoenix.share.PhoenixShareActivity"
+            android:theme="@style/Blaze.AppTheme"/>
+        <service android:name=".phoenix.PhoenixDownloader.PhoenixDownloaderService"
+            android:exported="false"/>
+    </application>
+
+</manifest>
