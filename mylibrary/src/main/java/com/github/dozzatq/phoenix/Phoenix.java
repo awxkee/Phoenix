@@ -20,6 +20,7 @@ import android.support.annotation.RawRes;
 import android.support.annotation.StringRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
 import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
@@ -117,6 +118,12 @@ public class Phoenix {
     {
         getContext().startService(intentService);
         return this;
+    }
+
+    public Uri getExposedUri(Uri toExpose)
+    {
+        File file = new File(toExpose.getPath());
+        return FileProvider.getUriForFile(getContext(), getPackageName() + ".fileprovider", file);
     }
 
     public Phoenix stopService(Intent intentService)
