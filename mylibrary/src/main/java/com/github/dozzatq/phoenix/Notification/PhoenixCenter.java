@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
 import com.github.dozzatq.phoenix.Phoenix;
-import com.github.dozzatq.phoenix.Util.AndroidUtilities;
+import com.github.dozzatq.phoenix.Util.PhoenixUtilities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +56,7 @@ public class PhoenixCenter {
     {
         if (phoenixNotification==null)
             throw  new NullPointerException("Notification listener must not be null");
-        AndroidUtilities.runOnUIThread(new Runnable() {
+        PhoenixUtilities.runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -86,7 +86,7 @@ public class PhoenixCenter {
                     singleList.remove(phoenixNotification);
             }
         }
-        AndroidUtilities.runOnUIThread(new Runnable() {
+        PhoenixUtilities.runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -114,7 +114,7 @@ public class PhoenixCenter {
             if (singleNotificationMap.containsKey(notificationKey)) {
                 List<PhoenixNotification> phoenixNotifications = singleNotificationMap.get(notificationKey);
                 for (final PhoenixNotification notification : phoenixNotifications) {
-                    AndroidUtilities.runOnUIThread(new Runnable() {
+                    PhoenixUtilities.runOnUIThread(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -143,7 +143,7 @@ public class PhoenixCenter {
             if (notificationMap.containsKey(notificationKey)) {
                 List<PhoenixNotification> phoenixNotifications = notificationMap.get(notificationKey);
                 for (final PhoenixNotification notification : phoenixNotifications) {
-                    AndroidUtilities.runOnUIThread(new Runnable() {
+                    PhoenixUtilities.runOnUIThread(new Runnable() {
                         @Override
                         public void run() {
                             try {

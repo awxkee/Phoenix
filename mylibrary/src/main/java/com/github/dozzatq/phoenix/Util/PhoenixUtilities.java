@@ -14,7 +14,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -42,6 +41,7 @@ import android.widget.TextView;
 
 import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.Phoenix;
+import com.github.dozzatq.phoenix.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,11 +53,10 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-public class AndroidUtilities {
+public class PhoenixUtilities {
 
     private static int prevOrientation = -10;
     private static boolean waitingForSms = false;
@@ -115,7 +114,7 @@ public class AndroidUtilities {
 
     private static Handler handler;
 
-    public AndroidUtilities()
+    public PhoenixUtilities()
     {
         handler = new Handler(Phoenix.getInstance().getContext().getMainLooper());
     }
@@ -332,7 +331,7 @@ public class AndroidUtilities {
             }
         }
         try {
-            File file = Phoenix.getInstance().getContext().getCacheDir();
+            File file = Phoenix.getInstance().getCacheDir();
             if (file != null) {
                 return file;
             }
@@ -441,10 +440,10 @@ public class AndroidUtilities {
     }
 
     public static boolean isTablet() {
-      /*  if (isTablet == null) {
-            isTablet = Phoenix.getInstance().getContext().getResources().getBoolean(R.bool.isTablet);
-        }*/
-        return false;
+        if (isTablet == null) {
+            isTablet = Phoenix.getInstance().getBoolean(R.bool.isTablet);
+        }
+        return isTablet;
     }
 
     public static boolean isSmallTablet() {
@@ -511,7 +510,7 @@ public class AndroidUtilities {
     private static Field mAttachInfoField;
     private static Field mStableInsetsField;
     public static int getViewInset(View view) {
-        if (view == null || Build.VERSION.SDK_INT < 21 || view.getHeight() == AndroidUtilities.displaySize.y || view.getHeight() == AndroidUtilities.displaySize.y - statusBarHeight) {
+        if (view == null || Build.VERSION.SDK_INT < 21 || view.getHeight() == PhoenixUtilities.displaySize.y || view.getHeight() == PhoenixUtilities.displaySize.y - statusBarHeight) {
             return 0;
         }
         try {
@@ -879,7 +878,7 @@ public class AndroidUtilities {
                 builder.append(" ");
             }
             query = query.trim();
-            builder.append(AndroidUtilities.replaceTags("<c#ff4d83b3>" + query + "</c>"));
+            builder.append(PhoenixUtilities.replaceTags("<c#ff4d83b3>" + query + "</c>"));
 
             lastIndex = end;
         }

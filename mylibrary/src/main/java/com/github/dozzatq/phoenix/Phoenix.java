@@ -6,28 +6,36 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.AnimRes;
 import android.support.annotation.AnyThread;
 import android.support.annotation.ArrayRes;
+import android.support.annotation.BoolRes;
 import android.support.annotation.ColorRes;
+import android.support.annotation.DimenRes;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.RawRes;
 import android.support.annotation.StringRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.view.LayoutInflater;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
 import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.Notification.PhoenixCenter;
 import com.github.dozzatq.phoenix.Notification.PhoenixNotification;
 import com.github.dozzatq.phoenix.Prefs.PhoenixPreferences;
-import com.github.dozzatq.phoenix.Util.AndroidUtilities;
+import com.github.dozzatq.phoenix.Util.PhoenixUtilities;
 
 import java.io.File;
 import java.util.Locale;
@@ -79,6 +87,35 @@ public class Phoenix {
         return ContextCompat.getDrawable(getContext(), resId);
     }
 
+    public boolean getBoolean(@BoolRes int resId)
+    {
+        return getResources().getBoolean(resId);
+    }
+
+    public Animation getAnimation(@AnimRes int resId)
+    {
+        return AnimationUtils.loadAnimation(getContext(), resId);
+    }
+
+    public int getInteger(@IntegerRes int resId)
+    {
+        return getResources().getInteger(resId);
+    }
+
+    public int getDimensionPixelSize(@DimenRes int resId)
+    {
+        return getResources().getDimensionPixelSize(resId);
+    }
+
+    public int getDimensionPixelOffset(@DimenRes int resId)
+    {
+        return getResources().getDimensionPixelOffset(resId);
+    }
+
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        return getContext().getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
+    }
+
     @TargetApi(Build.VERSION_CODES.M)
     public int checkSelfPermission(String permission)
     {
@@ -120,6 +157,16 @@ public class Phoenix {
         return this;
     }
 
+    public boolean isTablet()
+    {
+        return PhoenixUtilities.isTablet();
+    }
+
+    public PhoenixUtilities getUtilities()
+    {
+        return new PhoenixUtilities();
+    }
+
     public Uri getExposedUri(Uri toExpose)
     {
         File file = new File(toExpose.getPath());
@@ -135,6 +182,11 @@ public class Phoenix {
     {
         getContext().stopService(intentService);
         return this;
+    }
+
+    public LayoutInflater getLayoutInflater()
+    {
+        return LayoutInflater.from(getContext());
     }
 
     public Typeface getTypeface(String assetPath)
@@ -245,7 +297,7 @@ public class Phoenix {
 
     public void setContext(Context applicationContext) {
         this.applicationContext = applicationContext;
-        new AndroidUtilities();
+        new PhoenixUtilities();
     }
 
     public Phoenix putString(String key, String value)

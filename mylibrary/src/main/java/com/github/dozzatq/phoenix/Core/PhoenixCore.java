@@ -35,14 +35,12 @@ public class PhoenixCore {
         return localInstance;
     }
 
-    private Context appContext;
     private Map<String, List<NotificationHandler>> handlerList;
 
     private PhoenixCore()
     {
         if (Phoenix.getInstance().getContext()==null)
             throw  new IllegalStateException("Phoenix must be inited !");
-        appContext = Phoenix.getInstance().getContext();
         handlerList = Collections.synchronizedMap(new HashMap<String, List<NotificationHandler>>());
     }
 
