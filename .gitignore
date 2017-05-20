@@ -12,3 +12,8 @@ gradle.properties
 /gradle
 *.asc
 maven_push.gradle
+gradle-app.setting
+gradle/wrapper/gradle-wrapper.properties
+.gradletasknamecache
+gradle-wrapper.jar
+/build/
