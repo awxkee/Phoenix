@@ -35,6 +35,7 @@ import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.Notification.PhoenixCenter;
 import com.github.dozzatq.phoenix.Notification.PhoenixNotification;
 import com.github.dozzatq.phoenix.Prefs.PhoenixPreferences;
+import com.github.dozzatq.phoenix.Util.PhoenixDeviceIdGenerator;
 import com.github.dozzatq.phoenix.Util.PhoenixUtilities;
 
 import java.io.File;
@@ -61,7 +62,22 @@ public class Phoenix {
         return localInstance;
     }
 
+    private Phoenix()
+    {
+        userId = null;
+    }
+
+    private String userId;
     private Context applicationContext;
+
+    public String getUserId()
+    {
+        if (userId==null)
+        {
+            userId = PhoenixDeviceIdGenerator.readDeviceId(getContext());
+        }
+        return userId;
+    }
 
     public PhoenixCenter getCenter()
     {
@@ -161,7 +177,6 @@ public class Phoenix {
     {
         return PhoenixUtilities.isTablet();
     }
-
     public PhoenixUtilities getUtilities()
     {
         return new PhoenixUtilities();
