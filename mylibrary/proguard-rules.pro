@@ -17,3 +17,4 @@
 #}
 
 -keep public class com.github.dozzatq.**
+-keepclasseswithmembers class com.github.dozzatq.phoenix.Auth.** { *; }
