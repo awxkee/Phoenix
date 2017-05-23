@@ -29,7 +29,6 @@ public class Decoder {
             }
             catch (Throwable e)
             {
-                e.printStackTrace();
                 return nativeDecodePreKitKat(horoscope);
             }
         }
@@ -41,7 +40,6 @@ public class Decoder {
         try {
             return new String(Base64.decode(horoscope, Base64.DEFAULT), "UTF-8");
         } catch (Throwable e) {
-            e.printStackTrace();
             return "";
         }
     }

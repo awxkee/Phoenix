@@ -53,7 +53,7 @@ public class PhoenixDownloader
 
     private boolean indeterminateBinded = false;
 
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             int status = intent.getIntExtra(PhoenixDownloaderConfig.PARAM_STATUS,0);

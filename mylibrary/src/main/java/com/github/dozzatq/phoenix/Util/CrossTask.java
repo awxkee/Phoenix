@@ -88,12 +88,12 @@ public abstract class CrossTask<R,T> implements Task.OnCompleteListener<T>, Task
 
     public abstract void cancelTask();
 
-    public boolean hasCrossedTaskResult()
+    private boolean hasCrossedTaskResult()
     {
         return getCrossedTaskResult() != null;
     }
 
-    public boolean hassCrossedTaskResult()
+    private boolean hassCrossedTaskResult()
     {
         return getsCrossedTaskResult() != null;
     }
@@ -102,11 +102,11 @@ public abstract class CrossTask<R,T> implements Task.OnCompleteListener<T>, Task
         return crossedTaskResult;
     }
 
-    private void setCrossedTaskResult(T crossedTaskResult) {
+    public void setCrossedTaskResult(T crossedTaskResult) {
         this.crossedTaskResult = crossedTaskResult;
     }
 
-    public R getsCrossedTaskResult() {
+    private R getsCrossedTaskResult() {
         return sCrossedTaskResult;
     }
 

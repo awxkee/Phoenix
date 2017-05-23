@@ -30,6 +30,9 @@ import android.view.LayoutInflater;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
 import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.Notification.PhoenixCenter;
@@ -78,6 +81,8 @@ public class Phoenix {
         }
         return userId;
     }
+
+    private RequestQueue requestQueue;
 
     public PhoenixCenter getCenter()
     {
@@ -312,6 +317,7 @@ public class Phoenix {
 
     public void setContext(Context applicationContext) {
         this.applicationContext = applicationContext;
+        requestQueue = Volley.newRequestQueue(applicationContext);
         new PhoenixUtilities();
     }
 
@@ -421,4 +427,7 @@ public class Phoenix {
         return PhoenixPreferences.getInstance().getString(key, defValue);
     }
 
+    public RequestQueue getRequestQueue() {
+        return requestQueue;
+    }
 }

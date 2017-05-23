@@ -58,8 +58,8 @@ public class PhoenixDownloaderService extends Service {
             if (downloadUrl==null)
                 stopSelf(msg.arg1);
 
-            BlazeDownloaderTask blazeDownloaderTask = new BlazeDownloaderTask(filename, receiver, downloadUrl);
-            blazeDownloaderTask.execute();
+            PhoenixDownloaderTask phoenixDownloaderTask = new PhoenixDownloaderTask(filename, receiver, downloadUrl);
+            phoenixDownloaderTask.execute();
 
         }
     }
@@ -95,7 +95,7 @@ public class PhoenixDownloaderService extends Service {
         return START_STICKY;
     }
 
-    private class BlazeDownloaderTask extends AsyncTask<Void, Integer, TaskResult> {
+    private class PhoenixDownloaderTask extends AsyncTask<Void, Integer, TaskResult> {
 
         private String filename;
         private String receiver;
@@ -103,7 +103,7 @@ public class PhoenixDownloaderService extends Service {
         private Integer receivedBytes;
         private Integer totalBytes;
 
-        private BlazeDownloaderTask(String filename, String receiver, String downloadUrl) {
+        private PhoenixDownloaderTask(String filename, String receiver, String downloadUrl) {
             this.filename = filename;
             this.receiver = receiver;
             this.downloadUrl = downloadUrl;

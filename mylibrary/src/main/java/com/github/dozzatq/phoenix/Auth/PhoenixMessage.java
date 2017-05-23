@@ -11,6 +11,7 @@ public class PhoenixMessage {
     private String messageBody;
     private String[] recipientId;
     private long messageTime;
+    private String roomId;
 
     public PhoenixMessage()
     {
@@ -63,5 +64,13 @@ public class PhoenixMessage {
 
     public void setMessageTime(long messageTime) {
         this.messageTime = messageTime;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 }

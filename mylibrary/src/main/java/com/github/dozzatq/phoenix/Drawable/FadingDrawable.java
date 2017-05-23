@@ -16,10 +16,10 @@ final public class FadingDrawable extends BitmapDrawable {
     // Only accessed from main thread.
     private static final float FADE_DURATION = 250; //ms
     private final float density;
-    Drawable placeholder;
-    long startTimeMillis;
-    boolean animating;
-    int alpha = 0xFF;
+    private Drawable placeholder;
+    private long startTimeMillis;
+    private boolean animating;
+    private int alpha = 0xFF;
 
     FadingDrawable(Context context, Bitmap bitmap, Drawable placeholder) {
         super(context.getResources(), bitmap);

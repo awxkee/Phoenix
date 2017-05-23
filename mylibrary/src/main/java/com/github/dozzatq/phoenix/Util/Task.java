@@ -94,7 +94,7 @@ public abstract class Task<R> {
     public Task<R> addOnSuccessListener(@NonNull OnSuccessListener<R> listener)
     {
         onSuccessListeners.add(listener);
-        if (hasCompleteResult())
+        if (hasSuccessResult())
         {
             try{
             listener.OnSuccessListener(getSuccessResult());

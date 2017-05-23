@@ -37,7 +37,7 @@ public class PhoenixCenter {
         return localInstance;
     }
 
-    private Context appContext;
+  //  private Context appContext;
 
     @AnyThread
     public void postNotification(final String notificationKey,final Object... values)
@@ -336,7 +336,7 @@ public class PhoenixCenter {
             observerList = notificationMap.get(notificationKey);
         }
         else{
-            observerList = new ArrayList<>();
+            observerList = Collections.synchronizedList(new ArrayList<PhoenixNotification>());
             notificationMap.put(notificationKey, observerList);
         }
         observerList.add(phoenixNotification);
@@ -359,7 +359,7 @@ public class PhoenixCenter {
             observerList = singleNotificationMap.get(notificationKey);
         }
         else{
-            observerList = new ArrayList<>();
+            observerList = Collections.synchronizedList(new ArrayList<PhoenixNotification>());
             singleNotificationMap.put(notificationKey, observerList);
         }
         observerList.add(phoenixNotification);
@@ -370,7 +370,7 @@ public class PhoenixCenter {
 
     private PhoenixCenter()
     {
-        appContext = Phoenix.getInstance().getContext();
+        Context appContext = Phoenix.getInstance().getContext();
         if (appContext==null)
             throw new IllegalStateException("Phoenix must be inited !");
         notificationMap = Collections.synchronizedMap(new HashMap<String, List<PhoenixNotification>>());
