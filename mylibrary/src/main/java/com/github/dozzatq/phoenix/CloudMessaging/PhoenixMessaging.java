@@ -2,8 +2,10 @@ package com.github.dozzatq.phoenix.CloudMessaging;
 
 import android.os.AsyncTask;
 
+import com.github.dozzatq.phoenix.Tasks.Task;
+import com.github.dozzatq.phoenix.Tasks.TaskSource;
+import com.github.dozzatq.phoenix.Tasks.Tasks;
 import com.github.dozzatq.phoenix.Util.PhoenixIdGenerator;
-import com.github.dozzatq.phoenix.Util.Task;
 import com.google.gson.Gson;
 
 
@@ -27,120 +29,39 @@ public class PhoenixMessaging {
     public static Task<String> newMessageTask(final HashMap<String, Object> dataValue,
                                        final String instanceIdToken,
                                        final String decodedAPIKey){
-        final PhoenixPushTask phoenixPushTask = new PhoenixPushTask(dataValue, instanceIdToken, decodedAPIKey);
-        final Task<String> task = new Task<String>() {
+        TaskSource<String> task = new TaskSource<String>() {
             @Override
-            public void cancelTask() {
-                phoenixPushTask.cancel(true);
+            public String call() throws Exception {
+                HttpURLConnection urlConnection = null;
+                FirebaseData firebaseData = new FirebaseData();
+                firebaseData.setCollapseKey(PhoenixIdGenerator.generatePushId());
+                Gson gsonParser = new Gson();
+                firebaseData.setTo(instanceIdToken);
+                firebaseData.setData(dataValue);
+                String data= gsonParser.toJson(firebaseData);
+                String result = null;
+
+                urlConnection = post("https://fcm.googleapis.com/fcm/send",
+                        "application/json", data, decodedAPIKey );
+
+                //Read
+                BufferedReader bufferedReader = null;
+                bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+
+                String line = null;
+                StringBuilder sb = new StringBuilder();
+
+                while ((line = bufferedReader.readLine()) != null) {
+                   sb.append(line);
+                }
+                bufferedReader.close();
+
+                result = sb.toString();
+
+                return result;
             }
         };
-        phoenixPushTask.setTask(task);
-        phoenixPushTask.execute();
-        return task;
-    }
-
-    private static class PhoenixPushTask extends AsyncTask<Void, Void, PushTaskResult> {
-
-        private HashMap<String, Object> dataValue;
-        private String instanceIdToken;
-        private String decodedAPIKey;
-        private Task<String> task;
-
-        PhoenixPushTask(HashMap<String, Object> dataValue, String instanceIdToken, String decodedAPIKey) {
-
-            this.dataValue = dataValue;
-            this.instanceIdToken = instanceIdToken;
-            this.decodedAPIKey = decodedAPIKey;
-        }
-
-        @Override
-        protected void onPostExecute(PushTaskResult taskResult) {
-            if (!taskResult.isResult())
-                task.notifyFailureListener(taskResult.getException());
-            else
-                task.notifySuccessListeners(taskResult.getResultString());
-            super.onPostExecute(taskResult);
-        }
-
-        @Override
-        protected void onCancelled() {
-            task.notifyCanceledListeners();
-            super.onCancelled();
-        }
-
-        @Override
-        protected PushTaskResult doInBackground(Void... voids) {
-            HttpURLConnection urlConnection = null;
-            FirebaseData firebaseData = new FirebaseData();
-            firebaseData.setCollapseKey(PhoenixIdGenerator.generatePushId());
-            Gson gsonParser = new Gson();
-            firebaseData.setTo(instanceIdToken);
-            firebaseData.setData(dataValue);
-            String data= gsonParser.toJson(firebaseData);
-            String result = null;
-
-            try {
-                urlConnection = post("https://fcm.googleapis.com/fcm/send","application/json", data, decodedAPIKey );
-            } catch (IOException e) {
-                return new PushTaskResult(e, null, false);
-            }
-
-            //Read
-            BufferedReader bufferedReader = null;
-            try {
-                bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
-            } catch (IOException e) {
-                return new PushTaskResult(e, null, false);
-            }
-
-            String line = null;
-            StringBuilder sb = new StringBuilder();
-
-            try {
-                while ((line = bufferedReader.readLine()) != null) {
-                    sb.append(line);
-                }
-            } catch (IOException e) {
-                return new PushTaskResult(e, null, false);
-            }
-
-            try {
-                bufferedReader.close();
-            } catch (IOException e) {
-                return new PushTaskResult(e, null, false);
-            }
-            result = sb.toString();
-
-            return new PushTaskResult(null, result, true);
-        }
-
-        public void setTask(Task<String> task) {
-            this.task = task;
-        }
-    }
-
-    private static class PushTaskResult{
-        private Exception exception;
-        private String resultString;
-        private boolean result;
-
-        private PushTaskResult(Exception exception, String resultString, boolean result) {
-            this.exception = exception;
-            this.resultString = resultString;
-            this.result = result;
-        }
-
-        public boolean isResult() {
-            return result;
-        }
-
-        public String getResultString() {
-            return resultString;
-        }
-
-        public Exception getException() {
-            return exception;
-        }
+        return Tasks.execute(task);
     }
 
     private static HttpURLConnection post(String url, String contentType, String body, String key)

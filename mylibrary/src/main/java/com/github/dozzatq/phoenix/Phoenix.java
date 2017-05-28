@@ -137,10 +137,12 @@ public class Phoenix {
         return getContext().getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
     public int checkSelfPermission(String permission)
     {
-        return getContext().checkSelfPermission(permission);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return getContext().checkSelfPermission(permission);
+        }
+        else return PackageManager.PERMISSION_GRANTED;
     }
 
     public PackageManager getPackageManager()
