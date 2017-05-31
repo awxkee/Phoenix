@@ -1,5 +1,6 @@
 package com.github.dozzatq.phoenix.Tasks;
 
+import java.util.Collection;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -21,7 +22,12 @@ public class Tasks {
     public static <PResult,ZResult> RuntimeTask<PResult,ZResult>
         executeRuntime(final RuntimeTaskSource<PResult,ZResult>  taskSource)
     {
-        return executeRuntime(threadPoolExecutor, taskSource);
+        return executeRuntime(getDefaultExecutor(), taskSource);
+    }
+
+    public static Executor getDefaultExecutor()
+    {
+        return threadPoolExecutor;
     }
 
     public static <PResult,ZResult> RuntimeTask<PResult,ZResult>
@@ -47,9 +53,24 @@ public class Tasks {
         return taskSource.getTask();
     }
 
+    public static TaskAlliance allianceTask(Task... tasks)
+    {
+        return new TaskAlliance(tasks);
+    }
+
+    public static TaskAlliance allianceTask(Collection<? extends Task<?>> taskCollection)
+    {
+        return new TaskAlliance(taskCollection);
+    }
+
+    public static TaskAlliance allianceTask(Task task)
+    {
+        return new TaskAlliance(task);
+    }
+
     public static <PResult> Task<PResult> execute(final TaskSource<PResult> taskSource)
     {
-        return execute(threadPoolExecutor, taskSource);
+        return execute(getDefaultExecutor(), taskSource);
     }
 
     public static <PResult> Task<PResult> execute(Executor executor, final TaskSource<PResult> taskSource)

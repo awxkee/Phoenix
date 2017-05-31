@@ -1,13 +1,9 @@
 package com.github.dozzatq.phoenix.Tasks;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -16,23 +12,28 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
 
-    private List<OnPublishListener<ZResult>> onPublishListener;
-    private Handler obtainHandler;
+    private ArrayDeque<OnPublishListener<ZResult>> onPublishListener;
     private ZResult zResult;
     private ThreadPoolExecutor executor;
     private boolean isMayPublish;
 
     public RuntimeTask()
     {
-        obtainHandler = new Handler(Looper.getMainLooper());
-        onPublishListener = Collections.synchronizedList(new ArrayList<OnPublishListener<ZResult>>());
+        onPublishListener = new ArrayDeque<>();
     }
 
     public void setPublish(ZResult result)
     {
-        zResult = result;
-        isMayPublish = true;
-        notifyPublishListener();
+        synchronized (synchronizedObject) {
+            zResult = result;
+            isMayPublish = true;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    notifyPublishListener();;
+                }
+            });
+        }
     }
 
     @NonNull
@@ -55,11 +56,11 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
 
     public ZResult getPublish()
     {
-        if (isMayPublish())
-        {
-            return zResult;
+        synchronized (synchronizedObject) {
+            if (isMayPublish()) {
+                return zResult;
+            } else return null;
         }
-        else return null;
     }
 
     private void notifyPublishListener()
@@ -67,17 +68,7 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
         if (isMayPublish()) {
             for (final OnPublishListener<ZResult> listener : onPublishListener) {
                 try {
-                    Runnable publishRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.OnPublish(getPublish());
-                        }
-                    };
-                    if (getExecutor()!=null) {
-                        getExecutor().submit(publishRunnable);
-                    }else {
-                        obtainHandler.post(publishRunnable);
-                    }
+                     listener.OnPublish(getPublish());
                 } catch (Exception e1) {
                     Log.d("Task<PResult>", "Bad Publish Listener");
                 }
@@ -88,31 +79,29 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
     @NonNull
     public RuntimeTask<PResult, ZResult> addOnPublishListener(@NonNull final OnPublishListener<ZResult> listener)
     {
-        onPublishListener.add(listener);
-        if (isMayPublish())
-        {
-            try{
-                Runnable publishRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.OnPublish(getPublish());
-                    }
-                };
-                if (getExecutor()!=null) {
-                    getExecutor().submit(publishRunnable);
-                }else {
-                    obtainHandler.post(publishRunnable);
+        synchronized (synchronizedObject) {
+            onPublishListener.add(listener);
+            if (isMayPublish()) {
+                try {
+                    Runnable publishRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.OnPublish(getPublish());
+                        }
+                    };
+                    handler.post(publishRunnable);
+                } catch (Exception e) {
+                    Log.d("Task<PResult>", "Bad Publish Listener");
                 }
-                }
-            catch (Exception e){
-                Log.d("Task<PResult>", "Bad Complete Listener");
             }
+            return this;
         }
-        return this;
     }
 
     public boolean isMayPublish() {
-        return isMayPublish && !isExcepted();
+        synchronized (synchronizedObject) {
+            return isMayPublish && !isExcepted();
+        }
     }
 
     public ThreadPoolExecutor getExecutor() {
@@ -123,8 +112,5 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
         this.executor = executor;
     }
 
-    public interface OnPublishListener<ZResult> {
-        void OnPublish(ZResult pResult);
-    }
 
 }

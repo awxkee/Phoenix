@@ -6,41 +6,48 @@ import java.util.concurrent.Executor;
  * Created by dxfb on 27.05.2017.
  */
 
-public class ExtensionReviserTask<PResult, PExtension> implements OnExtensionListener<PResult>,
+class ExtensionReviserTask<PResult, PExtension> implements OnExtensionListener<PResult>,
         OnFailureListener,
-        OnSuccessListener<PExtension> {
+        OnCompleteListener<PExtension> {
 
     private Executor executor;
     private Extension<PResult, Task<PExtension>> extensionTask;
     private Task<PExtension> pExtension;
+    private final Object waitObject = new Object();
 
     public ExtensionReviserTask(Executor executor, Extension<PResult, Task<PExtension>> extensionTask, Task<PExtension> pExtension) {
         this.executor = executor;
+        if (this.executor==null)
+            this.executor = Tasks.getDefaultExecutor();
         this.extensionTask = extensionTask;
         this.pExtension = pExtension;
     }
 
     @Override
-    public void OnExtension(final Task<PResult> pResult) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                Task<PExtension> pExtensionTask = null;
-                try {
-                    pExtensionTask = extensionTask.then(pResult);
-                } catch (Exception e) {
-                    pExtension.setException(e);
-                }
+    public void OnExtension(final Task<PResult> pResult)
+    {
+        synchronized (waitObject) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (waitObject) {
+                        Task<PExtension> pExtensionTask = null;
+                        try {
+                            pExtensionTask = extensionTask.then(pResult);
+                        } catch (Exception e) {
+                            pExtension.setException(e);
+                        }
 
-                if (pExtensionTask==null)
-                {
-                    ExtensionReviserTask.this.OnFailure(new NullPointerException("Continuation returned null"));
-                }else {
-                    pExtensionTask.addOnSuccessListener(ExtensionReviserTask.this);
-                    pExtensionTask.addOnFailureListener(ExtensionReviserTask.this);
+                        if (pExtensionTask == null) {
+                            ExtensionReviserTask.this.OnFailure(new NullPointerException("Extension returned null"));
+                        } else {
+                            pExtensionTask.addOnCompleteListener(ExtensionReviserTask.this);
+                            pExtensionTask.addOnFailureListener(ExtensionReviserTask.this);
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -49,7 +56,7 @@ public class ExtensionReviserTask<PResult, PExtension> implements OnExtensionLis
     }
 
     @Override
-    public void OnSuccess(PExtension pExtension) {
+    public void OnComplete(PExtension pExtension) {
         ExtensionReviserTask.this.pExtension.setResult(pExtension);
     }
 }
