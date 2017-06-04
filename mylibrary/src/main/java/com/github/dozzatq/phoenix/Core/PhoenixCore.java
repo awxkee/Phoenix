@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 public class PhoenixCore {
 
     private static PhoenixCore ourInstance = null;
+
     private final Object waitObject = new Object();
 
     @AnyThread

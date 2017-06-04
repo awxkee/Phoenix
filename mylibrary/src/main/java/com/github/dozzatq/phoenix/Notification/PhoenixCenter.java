@@ -3,6 +3,7 @@ package com.github.dozzatq.phoenix.Notification;
 import android.content.Context;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
@@ -10,7 +11,9 @@ import com.github.dozzatq.phoenix.Phoenix;
 import com.github.dozzatq.phoenix.Tasks.DefaultExecutor;
 import com.github.dozzatq.phoenix.Util.PhoenixUtilities;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -23,6 +26,7 @@ public class PhoenixCenter {
 
     private Map<String, CenterQueue> notificationMap;
     private Map<String, SingleCenterQueue> singleNotificationMap;
+    private ArrayDeque<CenterAction> actionQueue;
 
     private final Object waitObject = new Object();
 
@@ -37,6 +41,71 @@ public class PhoenixCenter {
             }
         }
         return localInstance;
+    }
+
+    @AnyThread
+    public PhoenixCenter addAction(@NonNull String actionKey, @NonNull OnActionComplete actionComplete) {
+        return addAction(DefaultExecutor.getInstance(), actionKey, actionComplete);
+    }
+
+    @AnyThread
+    public PhoenixCenter addAction(@NonNull Executor executor, @NonNull String actionKey, @NonNull OnActionComplete actionComplete)
+    {
+        synchronized (waitObject) {
+            if (actionKey == null || actionComplete == null)
+                throw new NullPointerException("Action & OnActionComplete must not be null!");
+            if (getAction(actionKey) != null)
+                removeAction(actionKey);
+            actionQueue.add(new CenterAction(executor, actionKey, actionComplete));
+            return this;
+        }
+    }
+
+    @AnyThread
+    public PhoenixCenter callAction(@NonNull String actionKey, @Nullable Object...values)
+    {
+        synchronized (waitObject) {
+            CenterAction action = getAction(actionKey);
+            if (action!=null)
+                action.doCall(values);
+            return this;
+        }
+    }
+
+    @AnyThread
+    public PhoenixCenter removeAction(@NonNull String actionKey)
+    {
+        synchronized (waitObject) {
+            if (actionKey == null)
+                throw new NullPointerException("Action must not be null!");
+            Iterator<CenterAction> centerActionIterator = actionQueue.descendingIterator();
+            while (centerActionIterator.hasNext()) {
+                CenterAction currentAction = centerActionIterator.next();
+                if (currentAction.isAction(actionKey)) {
+                    centerActionIterator.remove();
+                    break;
+                }
+            }
+            return this;
+        }
+    }
+
+    private CenterAction getAction(String actionKey)
+    {
+        synchronized (waitObject) {
+            if (actionKey == null)
+                throw new NullPointerException("Action must not be null!");
+            Iterator<CenterAction> centerActionIterator = actionQueue.descendingIterator();
+            CenterAction resultAction = null;
+            while (centerActionIterator.hasNext()) {
+                CenterAction currentAction = centerActionIterator.next();
+                if (currentAction.isAction(actionKey)) {
+                    resultAction = currentAction;
+                    break;
+                }
+            }
+            return resultAction;
+        }
     }
 
     @AnyThread
@@ -324,6 +393,7 @@ public class PhoenixCenter {
         if (appContext==null)
             throw new IllegalStateException("Phoenix must be inited !");
         notificationMap = new HashMap<String, CenterQueue>();
+        actionQueue = new ArrayDeque<>();
         singleNotificationMap = new HashMap<String, SingleCenterQueue>();
     }
 }

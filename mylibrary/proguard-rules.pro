@@ -27,13 +27,14 @@
 -keepclasseswithmembers class com.github.dozzatq.phoenix.Auth.** { *; }
 -keepclasseswithmembers class com.github.dozzatq.phoenix.CloudMessaging.FirebaseData { *; }
 
--keep public interface com.github.dozzatq.phoenix.Tasks.OnCompleteListener
--keep public interface com.github.dozzatq.phoenix.Tasks.OnFailureListener
--keep public interface com.github.dozzatq.phoenix.Tasks.OnSuccessListener
--keep public interface com.github.dozzatq.phoenix.Tasks.OnUnionListener
--keep public interface com.github.dozzatq.phoenix.Tasks.Extension
--keep public interface com.github.dozzatq.phoenix.Notification.PhoenixNotification
--keep public interface com.github.dozzatq.phoenix.Core.NotificationHandler
+-keep public interface com.github.dozzatq.phoenix.Tasks.OnCompleteListener { *;}
+-keep public interface com.github.dozzatq.phoenix.Tasks.OnFailureListener { *;}
+-keep public interface com.github.dozzatq.phoenix.Tasks.OnSuccessListener { *;}
+-keep public interface com.github.dozzatq.phoenix.Tasks.OnUnionListener { *;}
+-keep public interface com.github.dozzatq.phoenix.Tasks.Extension { *;}
+-keep public interface com.github.dozzatq.phoenix.Notification.PhoenixNotification { *;}
+-keep public interface com.github.dozzatq.phoenix.Notification.OnActionComplete { *;}
+-keep public interface com.github.dozzatq.phoenix.Core.NotificationHandler { *;}
 
 -keepattributes *Annotation*
 

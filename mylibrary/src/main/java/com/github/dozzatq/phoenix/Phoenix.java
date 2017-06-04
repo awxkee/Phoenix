@@ -21,6 +21,8 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntegerRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RawRes;
 import android.support.annotation.StringRes;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +37,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
 import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
+import com.github.dozzatq.phoenix.Notification.OnActionComplete;
 import com.github.dozzatq.phoenix.Notification.PhoenixCenter;
 import com.github.dozzatq.phoenix.Notification.PhoenixNotification;
 import com.github.dozzatq.phoenix.Prefs.PhoenixPreferences;
@@ -244,6 +247,24 @@ public class Phoenix {
     public PhoenixCenter removeAllSingleEventListeners(String notificationKey)
     {
         return getCenter().removeAllSingleEventListeners(notificationKey);
+    }
+
+    @AnyThread
+    public PhoenixCenter addAction(@NonNull String actionKey, @NonNull OnActionComplete actionComplete)
+    {
+        return getCenter().addAction(actionKey, actionComplete);
+    }
+
+    @AnyThread
+    public PhoenixCenter callAction(@NonNull String actionKey, @Nullable Object...values)
+    {
+        return getCenter().callAction(actionKey, values);
+    }
+
+    @AnyThread
+    public PhoenixCenter removeAction(@NonNull String actionKey)
+    {
+        return getCenter().removeAction(actionKey);
     }
 
     @AnyThread
