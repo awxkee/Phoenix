@@ -60,7 +60,7 @@ public class Tasks {
 
     public static <PResult> PResult await(@NonNull Task<PResult> task) throws ExecutionException,InterruptedException{
         if (Looper.getMainLooper()==Looper.myLooper())
-            throw new IllegalStateException("await must not be called on the main thread");
+            throw new IllegalStateException("Tasks.await must not be called on the main thread");
         if(task == null) {
             throw new NullPointerException("Task must not be null");
         }
@@ -134,7 +134,7 @@ public class Tasks {
         }
 
         @Override
-        public void OnFailure(Exception e) {
+        public void OnFailure(@NonNull Exception e) {
             this.zztj.countDown();
         }
 

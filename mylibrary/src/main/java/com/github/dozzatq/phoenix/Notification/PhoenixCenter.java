@@ -2,17 +2,17 @@ package com.github.dozzatq.phoenix.Notification;
 
 import android.content.Context;
 import android.support.annotation.AnyThread;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.github.dozzatq.phoenix.Core.PhoenixCore;
 import com.github.dozzatq.phoenix.Phoenix;
+import com.github.dozzatq.phoenix.Tasks.DefaultExecutor;
 import com.github.dozzatq.phoenix.Util.PhoenixUtilities;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Created by dxfb on 06.12.2016.
@@ -21,8 +21,10 @@ import java.util.Map;
 public class PhoenixCenter {
     private static PhoenixCenter ourInstance = null;
 
-    private Map<String, List<PhoenixNotification>> notificationMap;
-    private Map<String, List<PhoenixNotification>> singleNotificationMap;
+    private Map<String, CenterQueue> notificationMap;
+    private Map<String, SingleCenterQueue> singleNotificationMap;
+
+    private final Object waitObject = new Object();
 
     public static PhoenixCenter getInstance() {
         PhoenixCenter localInstance = ourInstance;
@@ -36,8 +38,6 @@ public class PhoenixCenter {
         }
         return localInstance;
     }
-
-  //  private Context appContext;
 
     @AnyThread
     public void postNotification(final String notificationKey,final Object... values)
@@ -54,18 +54,20 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationForEventListenerDelayed(final String notificationKey, final PhoenixNotification phoenixNotification, int delayed, final Object... values)
     {
-        if (phoenixNotification==null)
-            throw  new NullPointerException("Notification listener must not be null");
-        PhoenixUtilities.runOnUIThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    phoenixNotification.didReceiveNotification(notificationKey, values);
-                } catch (Exception e) {
-                    Log.d("PhoenixCenter", "Bad Listener");
+        synchronized (waitObject) {
+            if (phoenixNotification == null)
+                throw new NullPointerException("Notification listener must not be null");
+            PhoenixUtilities.runOnUIThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        phoenixNotification.didReceiveNotification(notificationKey, values);
+                    } catch (Exception e) {
+                        Log.d("PhoenixCenter", "Bad Listener");
+                    }
                 }
-            }
-        }, delayed);
+            }, delayed);
+        }
     }
 
     @AnyThread
@@ -77,25 +79,16 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationForSingleEventListenerDelayed(final String notificationKey, final PhoenixNotification phoenixNotification, int delayed, final Object... values)
     {
-        if (phoenixNotification==null)
-                throw  new NullPointerException("Notification listener must not be null");
-        if (!notificationMap.isEmpty()) {
-            if (notificationMap.containsKey(notificationKey)) {
-                List<PhoenixNotification> singleList = singleNotificationMap.get(notificationKey);
-                if (singleList.contains(phoenixNotification))
-                    singleList.remove(phoenixNotification);
-            }
-        }
-        PhoenixUtilities.runOnUIThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    phoenixNotification.didReceiveNotification(notificationKey, values);
-                } catch (Exception e) {
-                    Log.d("PhoenixCenter", "Bad Single Listener");
+        synchronized (waitObject) {
+            if (phoenixNotification == null)
+                throw new NullPointerException("Notification listener must not be null");
+            if (!notificationMap.isEmpty()) {
+                if (notificationMap.containsKey(notificationKey)) {
+                    DefaultCenterQueue singleList = singleNotificationMap.get(notificationKey);
+                    singleList.doCallForCurrent(phoenixNotification, notificationKey, delayed, values);
                 }
             }
-        }, delayed);
+        }
     }
 
     @AnyThread
@@ -107,27 +100,15 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationSingleEventListenersDelayed(final String notificationKey, int delay, final Object... values)
     {
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        if (!singleNotificationMap.isEmpty()) {
-            if (singleNotificationMap.containsKey(notificationKey)) {
-                List<PhoenixNotification> phoenixNotifications = singleNotificationMap.get(notificationKey);
-                for (final PhoenixNotification notification : phoenixNotifications) {
-                    PhoenixUtilities.runOnUIThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                notification.didReceiveNotification(notificationKey, values);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.d("PhoenixCenter", "Bad Single Listener");
-                            }
-                        }
-                    }, delay);
+            if (!singleNotificationMap.isEmpty()) {
+                if (singleNotificationMap.containsKey(notificationKey)) {
+                    DefaultCenterQueue phoenixNotifications = singleNotificationMap.get(notificationKey);
+                    phoenixNotifications.doCall(notificationKey, delay, values);
                 }
-                phoenixNotifications.clear();
             }
         }
     }
@@ -135,95 +116,67 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationDelayed(final String notificationKey, int delay, final Object... values)
     {
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
-        if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
-            return;
-        if (!notificationMap.isEmpty()) {
-            if (notificationMap.containsKey(notificationKey)) {
-                List<PhoenixNotification> phoenixNotifications = notificationMap.get(notificationKey);
-                for (final PhoenixNotification notification : phoenixNotifications) {
-                    PhoenixUtilities.runOnUIThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                notification.didReceiveNotification(notificationKey, values);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.d("PhoenixCenter", "Bad Listener");
-                            }
-                        }
-                    }, delay);
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
+            if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
+                return;
+            if (!notificationMap.isEmpty()) {
+                if (notificationMap.containsKey(notificationKey)) {
+                    DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
+                    phoenixNotifications.doCall(notificationKey, delay, values);
                 }
             }
+            postNotificationSingleEventListenersDelayed(notificationKey, delay, values);
         }
-        postNotificationSingleEventListenersDelayed(notificationKey, delay, values);
     }
 
     @AnyThread
     public PhoenixCenter removeAllListeners(String notificationKey)
     {
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        List<PhoenixNotification> observerList;
-
-        if (notificationMap.isEmpty())
-            return this;
-
-        if (!notificationMap.containsKey(notificationKey)) {
-            return this;
-        }
-        else{
-            observerList = notificationMap.get(notificationKey);
-            if (observerList.isEmpty())
+            if (notificationMap.isEmpty())
                 return this;
-            else {
-               observerList.clear();
-            }
-        }
 
-        return this;
+            if (!notificationMap.containsKey(notificationKey)) {
+                return this;
+            } else {
+                DefaultCenterQueue observerList = notificationMap.get(notificationKey);
+                observerList.flushQueue();
+            }
+
+            return this;
+        }
     }
 
     @AnyThread
     public void executeHandler(String notificationKey)
     {
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
-            return;
-        if (notificationMap.containsKey(notificationKey)) {
-            List<PhoenixNotification> notifications = notificationMap.get(notificationKey);
-            for (PhoenixNotification notification : notifications) {
-                try {
-                    PhoenixCore.getInstance().initiateListener(notificationKey, notification);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
+                return;
+            if (notificationMap.containsKey(notificationKey)) {
+                DefaultCenterQueue notifications = notificationMap.get(notificationKey);
+                notifications.doCallToHandler(notificationKey);
             }
-        }
-        if (singleNotificationMap.containsKey(notificationKey))
-        {
-            List<PhoenixNotification> notifications = singleNotificationMap.get(notificationKey);
-            for (PhoenixNotification notification : notifications) {
-                try {
-                    PhoenixCore.getInstance().initiateListener(notificationKey, notification);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            if (singleNotificationMap.containsKey(notificationKey)) {
+                DefaultCenterQueue notifications = singleNotificationMap.get(notificationKey);
+                notifications.doCallToHandler(notificationKey);
             }
-            notifications.clear();
         }
     }
 
     @AnyThread
     public void clearCenterForKey(String notificationKey)
     {
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+        if (notificationKey == null)
+            throw new NullPointerException("Notification key must not be null");
 
         removeAllListeners(notificationKey);
         removeAllSingleEventListeners(notificationKey);
@@ -232,140 +185,137 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter removeAllSingleEventListeners(String notificationKey)
     {
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        List<PhoenixNotification> observerList;
 
-        if (singleNotificationMap.isEmpty())
-            return this;
-
-        if (!singleNotificationMap.containsKey(notificationKey)) {
-            return this;
-        }
-        else{
-            observerList = singleNotificationMap.get(notificationKey);
-            if (observerList.isEmpty())
+            if (singleNotificationMap.isEmpty())
                 return this;
-            else {
-                observerList.clear();
-            }
-        }
 
-        return this;
+            if (!singleNotificationMap.containsKey(notificationKey)) {
+                return this;
+            } else {
+                DefaultCenterQueue observerList = singleNotificationMap.get(notificationKey);
+                observerList.flushQueue();
+            }
+
+            return this;
+        }
     }
 
 
     @AnyThread
     public PhoenixCenter removeListener(String notificationKey, PhoenixNotification phoenixNotification)
     {
-        if (phoenixNotification==null)
-            throw new NullPointerException("PhoenixNotification must not be null");
+        synchronized (waitObject) {
+            if (phoenixNotification == null)
+                throw new NullPointerException("PhoenixNotification must not be null");
 
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        List<PhoenixNotification> observerList;
-
-        if (notificationMap.isEmpty())
-            return this;
-
-        if (!notificationMap.containsKey(notificationKey)) {
-            return this;
-        }
-        else{
-            observerList = notificationMap.get(notificationKey);
-            if (observerList.isEmpty())
+            if (notificationMap.isEmpty())
                 return this;
-            else {
-                if (observerList.contains(phoenixNotification))
-                {
-                    observerList.remove(phoenixNotification);
-                    return this;
-                }
-            }
-        }
 
-        return this;
+            if (!notificationMap.containsKey(notificationKey)) {
+                return this;
+            } else {
+                DefaultCenterQueue observerList = notificationMap.get(notificationKey);
+                observerList.removeNotification(phoenixNotification);
+            }
+
+            return this;
+        }
     }
 
     @AnyThread
     public PhoenixCenter removeSingleEventListener(String notificationKey, PhoenixNotification phoenixNotification)
     {
-        if (phoenixNotification==null)
-            throw new NullPointerException("PhoenixNotification must not be null");
+        synchronized (waitObject) {
+            if (phoenixNotification == null)
+                throw new NullPointerException("PhoenixNotification must not be null");
 
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        List<PhoenixNotification> observerList;
 
-        if (singleNotificationMap.isEmpty())
-            return this;
-
-        if (!singleNotificationMap.containsKey(notificationKey)) {
-            return this;
-        }
-        else{
-            observerList = singleNotificationMap.get(notificationKey);
-            if (observerList.isEmpty())
+            if (singleNotificationMap.isEmpty())
                 return this;
-            else {
-                if (observerList.contains(phoenixNotification))
-                {
-                    observerList.remove(phoenixNotification);
-                    return this;
-                }
+
+            if (!singleNotificationMap.containsKey(notificationKey)) {
+                return this;
+            } else {
+                DefaultCenterQueue observerList = singleNotificationMap.get(notificationKey);
+                observerList.removeNotification(phoenixNotification);
             }
-        }
 
-        return this;
+            return this;
+        }
     }
 
     @AnyThread
-    public PhoenixCenter addListener(String notificationKey, PhoenixNotification phoenixNotification)
+    public PhoenixCenter addListener(@NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification)
     {
-        if (phoenixNotification==null)
-            throw new NullPointerException("PhoenixNotification must not be null");
-
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
-
-        List<PhoenixNotification> observerList;
-        if (notificationMap.containsKey(notificationKey)) {
-            observerList = notificationMap.get(notificationKey);
-        }
-        else{
-            observerList = Collections.synchronizedList(new ArrayList<PhoenixNotification>());
-            notificationMap.put(notificationKey, observerList);
-        }
-        observerList.add(phoenixNotification);
-        PhoenixCore.getInstance().initiateListener(notificationKey, phoenixNotification);
-
-        return this;
+        return addListener(DefaultExecutor.getInstance(), notificationKey, phoenixNotification);
     }
 
     @AnyThread
-    public PhoenixCenter addListenerForSingleEvent(String notificationKey, PhoenixNotification phoenixNotification)
+    public PhoenixCenter addListener(@NonNull Executor executor, @NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification)
     {
-        if (phoenixNotification==null)
-            throw new NullPointerException("PhoenixNotification must not be null");
+        synchronized (waitObject) {
+            if (phoenixNotification == null)
+                throw new NullPointerException("PhoenixNotification must not be null");
 
-        if (notificationKey==null)
-            throw  new NullPointerException("Notification key must not be null");
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
 
-        List<PhoenixNotification> observerList;
-        if (singleNotificationMap.containsKey(notificationKey)) {
-            observerList = singleNotificationMap.get(notificationKey);
+            CenterQueue observerList;
+            if (notificationMap.containsKey(notificationKey)) {
+                observerList = notificationMap.get(notificationKey);
+            } else {
+                observerList = new CenterQueue(executor);
+                notificationMap.put(notificationKey, (CenterQueue) observerList);
+            }
+            observerList.addNotification(phoenixNotification);
+            PhoenixCore.getInstance().initiateListener(notificationKey, phoenixNotification);
+
+            return this;
         }
-        else{
-            observerList = Collections.synchronizedList(new ArrayList<PhoenixNotification>());
-            singleNotificationMap.put(notificationKey, observerList);
-        }
-        observerList.add(phoenixNotification);
-        PhoenixCore.getInstance().initiateSingleListener(notificationKey, phoenixNotification);
+    }
 
-        return this;
+    @AnyThread
+    public PhoenixCenter addListenerForSingleEvent(@NonNull String notificationKey,
+                                                   @NonNull PhoenixNotification phoenixNotification) {
+        return addListenerForSingleEvent(DefaultExecutor.getInstance(), notificationKey, phoenixNotification);
+    }
+
+    @AnyThread
+    public PhoenixCenter addListenerForSingleEvent(@NonNull Executor executor,
+                                                   @NonNull String notificationKey,
+                                                   @NonNull PhoenixNotification phoenixNotification)
+    {
+        synchronized (waitObject) {
+            if (phoenixNotification == null)
+                throw new NullPointerException("PhoenixNotification must not be null");
+
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
+
+            SingleCenterQueue observerList;
+            if (singleNotificationMap.containsKey(notificationKey)) {
+                observerList = singleNotificationMap.get(notificationKey);
+            } else {
+                observerList = new SingleCenterQueue(executor);
+                singleNotificationMap.put(notificationKey, observerList);
+            }
+            observerList.addNotification(phoenixNotification);
+            PhoenixCore.getInstance().initiateSingleListener(notificationKey, phoenixNotification);
+
+            return this;
+        }
     }
 
     private PhoenixCenter()
@@ -373,7 +323,7 @@ public class PhoenixCenter {
         Context appContext = Phoenix.getInstance().getContext();
         if (appContext==null)
             throw new IllegalStateException("Phoenix must be inited !");
-        notificationMap = Collections.synchronizedMap(new HashMap<String, List<PhoenixNotification>>());
-        singleNotificationMap = Collections.synchronizedMap(new HashMap<String, List<PhoenixNotification>>());
+        notificationMap = new HashMap<String, CenterQueue>();
+        singleNotificationMap = new HashMap<String, SingleCenterQueue>();
     }
 }

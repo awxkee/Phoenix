@@ -82,10 +82,10 @@ public class Task<PResult> {
     public Task<PResult> addOnSuccessListener(@NonNull Executor executor, @NonNull OnSuccessListener<PResult> listener)
     {
         synchronized (synchronizedObject) {
-            OnTaskCompleteListener<PResult> pResultOnTaskCompleteListener = new SuccessCompletionSource<>(executor, listener);
-            blockListenerSource.addService(pResultOnTaskCompleteListener);
+            TaskQueueService<PResult> pResultTaskQueueService = new SuccessCompletionSource<>(executor, listener);
+            blockListenerSource.addService(pResultTaskQueueService);
             if (isComplete())
-                blockListenerSource.callForThis(pResultOnTaskCompleteListener, this);
+                blockListenerSource.callForThis(pResultTaskQueueService, this);
             return this;
         }
     }
@@ -94,10 +94,11 @@ public class Task<PResult> {
     private Task<PResult> addOnExtensionListener(@NonNull OnExtensionListener<PResult> listener)
     {
         synchronized (synchronizedObject) {
-            OnTaskCompleteListener<PResult> pResultOnTaskCompleteListener = new ExtensionCompletionSource<PResult>(DefaultExecutor.getInstance(), listener);
-            blockListenerSource.addService(pResultOnTaskCompleteListener);
+            TaskQueueService<PResult> pResultTaskQueueService =
+                    new ExtensionCompletionSource<PResult>(DefaultExecutor.getInstance(), listener);
+            blockListenerSource.addService(pResultTaskQueueService);
             if (isComplete())
-                blockListenerSource.callForThis(pResultOnTaskCompleteListener, this);
+                blockListenerSource.callForThis(pResultTaskQueueService, this);
             return this;
         }
     }
@@ -112,20 +113,19 @@ public class Task<PResult> {
     public Task<PResult> addOnFailureListener(@NonNull Executor executor, @NonNull OnFailureListener listener)
     {
         synchronized (synchronizedObject) {
-            OnTaskCompleteListener<PResult> pResultOnTaskCompleteListener = new FailureCompletionSource<>(executor, listener);
-            blockListenerSource.addService(pResultOnTaskCompleteListener);
+            TaskQueueService<PResult> pResultTaskQueueService = new FailureCompletionSource<>(executor, listener);
+            blockListenerSource.addService(pResultTaskQueueService);
             if (isExcepted())
-                blockListenerSource.callForThis(pResultOnTaskCompleteListener, this);
+                blockListenerSource.callForThis(pResultTaskQueueService, this);
             return this;
         }
     }
 
 
- /*   public Task<PResult> removeOnCompleteListener(@NonNull OnCompleteListener<PResult> listener)
+    public Task<PResult> removeOnCompleteListener(@NonNull OnCompleteListener<PResult> listener)
     {
         synchronized (synchronizedObject) {
-            if (onCompleteListeners.contains(listener))
-                onCompleteListeners.remove(listener);
+            blockListenerSource.removeFromQueue(listener);
             return this;
         }
     }
@@ -133,8 +133,7 @@ public class Task<PResult> {
     public Task<PResult> removeOnFailureListener(@NonNull OnFailureListener listener)
     {
         synchronized (synchronizedObject) {
-            if (onFailureListeners.contains(listener))
-                onFailureListeners.remove(listener);
+            blockListenerSource.removeFromQueue(listener);
             return this;
         }
     }
@@ -142,11 +141,10 @@ public class Task<PResult> {
     public Task<PResult> removeOnSuccessListener(@NonNull OnSuccessListener<PResult> listener)
     {
         synchronized (synchronizedObject) {
-            if (onSuccessListeners.contains(listener))
-                onSuccessListeners.remove(listener);
+            blockListenerSource.removeFromQueue(listener);
             return this;
         }
-    }*/
+    }
 
     @NonNull
     public Task<PResult> addOnCompleteListener(@NonNull OnCompleteListener<PResult> listener)
@@ -158,10 +156,10 @@ public class Task<PResult> {
     public Task<PResult> addOnCompleteListener(@NonNull Executor executor, @NonNull OnCompleteListener<PResult> listener)
     {
         synchronized (synchronizedObject) {
-            OnTaskCompleteListener<PResult> pResultOnTaskCompleteListener = new CompleteCompletionSource<>(DefaultExecutor.getInstance(), listener);
-            blockListenerSource.addService(pResultOnTaskCompleteListener);
+            TaskQueueService<PResult> pResultTaskQueueService = new CompleteCompletionSource<>(DefaultExecutor.getInstance(), listener);
+            blockListenerSource.addService(pResultTaskQueueService);
             if (isComplete())
-                blockListenerSource.callForThis(pResultOnTaskCompleteListener, this);
+                blockListenerSource.callForThis(pResultTaskQueueService, this);
         }
         return this;
     }
@@ -205,7 +203,7 @@ public class Task<PResult> {
 
     private void notifyCompleteListeners()
     {
-        blockListenerSource.callComplete(this);
+        blockListenerSource.callQueue(this);
     }
 
     public Object getTaskTag() {

@@ -8,7 +8,7 @@ import java.util.concurrent.Executor;
  * Created by dxfb on 04.06.2017.
  */
 
-class SuccessCompletionSource<PResult> implements OnTaskCompleteListener<PResult> {
+class SuccessCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     private Executor executor;
     private final Object waitObject=new Object();
@@ -35,6 +35,16 @@ class SuccessCompletionSource<PResult> implements OnTaskCompleteListener<PResult
                     }
                 });
             }
+        }
+    }
+
+    @Override
+    public boolean maybeRemove(Object criteria) {
+        synchronized (waitObject) {
+            if (criteria instanceof OnSuccessListener)
+                if (criteria.equals(pResultOnSuccessListener))
+                    return true;
+            return false;
         }
     }
 }

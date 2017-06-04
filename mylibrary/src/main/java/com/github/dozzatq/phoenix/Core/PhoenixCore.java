@@ -2,16 +2,19 @@ package com.github.dozzatq.phoenix.Core;
 
 import android.content.Context;
 import android.support.annotation.AnyThread;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.github.dozzatq.phoenix.Phoenix;
 import com.github.dozzatq.phoenix.Notification.PhoenixNotification;
+import com.github.dozzatq.phoenix.Tasks.DefaultExecutor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Created by dxfb on 08.12.2016.
@@ -20,6 +23,7 @@ import java.util.Map;
 public class PhoenixCore {
 
     private static PhoenixCore ourInstance = null;
+    private final Object waitObject = new Object();
 
     @AnyThread
     public static PhoenixCore getInstance() {
@@ -35,40 +39,52 @@ public class PhoenixCore {
         return localInstance;
     }
 
-    private Map<String, List<NotificationHandler>> handlerList;
+    private Map<String, CoreQueue> handlerList;
 
-    private PhoenixCore()
-    {
-        if (Phoenix.getInstance().getContext()==null)
-            throw  new IllegalStateException("Phoenix must be inited !");
-        handlerList = Collections.synchronizedMap(new HashMap<String, List<NotificationHandler>>());
+    private PhoenixCore() {
+        if (Phoenix.getInstance().getContext() == null)
+            throw new IllegalStateException("Phoenix must be inited !");
+        handlerList = new HashMap<>();
     }
 
-    public PhoenixCore addNotificationHandler(String notificationKey, NotificationHandler handler)
+    public PhoenixCore addNotificationHandler(@NonNull String notificationKey,
+                                              @NonNull NotificationHandler handler)
+
     {
-        if (notificationKey==null)
-            throw new NullPointerException("Notification key must not be null");
-        List<NotificationHandler> notificationHandlerList=null;
-        if (handlerList.containsKey(notificationKey))
-            notificationHandlerList = handlerList.get(notificationKey);
-        else notificationHandlerList = Collections.synchronizedList(new ArrayList<NotificationHandler>());
-        notificationHandlerList.add(handler);
-        handlerList.put(notificationKey, notificationHandlerList);
-        return this;
+        return addNotificationHandler(DefaultExecutor.getInstance(), notificationKey, handler);
+    }
+
+    public PhoenixCore addNotificationHandler(@NonNull Executor executor,
+                                              @NonNull String notificationKey,
+                                              @NonNull NotificationHandler handler)
+    {
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
+            CoreQueue notificationHandlerList = null;
+            if (handlerList.containsKey(notificationKey))
+                notificationHandlerList = handlerList.get(notificationKey);
+            else
+                notificationHandlerList = new CoreQueue(executor);
+            notificationHandlerList.addHandler(handler);
+            handlerList.put(notificationKey, notificationHandlerList);
+            return this;
+        }
     }
 
     public PhoenixCore removeNotificationHandler(String notificationKey, NotificationHandler handler)
     {
-        if (notificationKey==null)
-            throw new NullPointerException("Notification key must not be null");
-        List<NotificationHandler> notificationHandlerList=null;
-        if (handlerList.containsKey(notificationKey))
-            notificationHandlerList = handlerList.get(notificationKey);
-        if (notificationHandlerList==null)
+        synchronized (waitObject) {
+            if (notificationKey == null)
+                throw new NullPointerException("Notification key must not be null");
+            CoreQueue notificationHandlerList = null;
+            if (handlerList.containsKey(notificationKey))
+                notificationHandlerList = handlerList.get(notificationKey);
+            if (notificationHandlerList == null)
+                return this;
+            notificationHandlerList.removeHandler(handler);
             return this;
-        if (notificationHandlerList.contains(handler))
-            notificationHandlerList.remove(handler);
-        return this;
+        }
     }
 
     public void initiateListener(String notificationKey, PhoenixNotification phoenixNotification)
@@ -77,19 +93,13 @@ public class PhoenixCore {
             throw new NullPointerException("Notification key must not be null");
         if (phoenixNotification==null)
             throw new NullPointerException("Notification listener must not be null");
-        List<NotificationHandler> notificationHandlerList=null;
-        if (handlerList.containsKey(notificationKey))
-            notificationHandlerList = handlerList.get(notificationKey);
-        if (notificationHandlerList==null)
-            return;
-        for (NotificationHandler handler : notificationHandlerList) {
-            try {
-                handler.didNeedNotification(notificationKey, phoenixNotification);
-            }
-            catch (Exception e)
-            {
-                Log.d("PhoenixCore", "Bad Global Handler");
-            }
+        synchronized (waitObject) {
+            CoreQueue notificationHandlerList = null;
+            if (handlerList.containsKey(notificationKey))
+                notificationHandlerList = handlerList.get(notificationKey);
+            if (notificationHandlerList == null)
+                return;
+            notificationHandlerList.doQueue(notificationKey, phoenixNotification);
         }
     }
 
@@ -99,19 +109,13 @@ public class PhoenixCore {
             throw new NullPointerException("Notification key must not be null");
         if (phoenixNotification==null)
             throw new NullPointerException("Notification listener must not be null");
-        List<NotificationHandler> notificationHandlerList=null;
-        if (handlerList.containsKey(notificationKey))
-            notificationHandlerList = handlerList.get(notificationKey);
-        if (notificationHandlerList==null)
-            return;
-        for (NotificationHandler handler : notificationHandlerList) {
-            try {
-                handler.didNeedNotificationSingle(notificationKey, phoenixNotification);
-            }
-            catch (Exception e)
-            {
-                Log.d("PhoenixCore", "Bad Global Handler");
-            }
+        synchronized (waitObject) {
+            CoreQueue notificationHandlerList = null;
+            if (handlerList.containsKey(notificationKey))
+                notificationHandlerList = handlerList.get(notificationKey);
+            if (notificationHandlerList == null)
+                return;
+            notificationHandlerList.doQueueSingle(notificationKey, phoenixNotification);
         }
     }
 }

@@ -40,4 +40,9 @@ public class DefaultExecutor implements Executor {
     public void execute(@NonNull Runnable command) {
         handler.post(command);
     }
+
+    public void executeDelayed(@NonNull Runnable command, int delay)
+    {
+        handler.postDelayed(command, delay);
+    }
 }

@@ -4,7 +4,6 @@ import java.util.Map;
 
 public class FirebaseData {
     private Map<String, Object> data;
-//    private Map<String, Object> notification;
     private String collapseKey;
     private long timeTolive;
     private String to;

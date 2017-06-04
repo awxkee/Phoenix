@@ -9,23 +9,41 @@ import java.util.Iterator;
  * Created by dxfb on 04.06.2017.
  */
 
-public class TaskListenerQueue<PResult> {
+class TaskListenerQueue<PResult> {
     private final Object waitObject = new Object();
-    private ArrayDeque<OnTaskCompleteListener<PResult>> taskCompleteListeners;
+    private ArrayDeque<TaskQueueService<PResult>> taskCompleteListeners;
     private volatile boolean keepSynced;
 
-    public void addService(OnTaskCompleteListener<PResult> pResultOnTaskCompleteListener)
+    public void addService(TaskQueueService<PResult> pResultTaskQueueService)
     {
         synchronized (waitObject) {
             if (taskCompleteListeners == null)
             {
                 taskCompleteListeners = new ArrayDeque<>();
             }
-            taskCompleteListeners.add(pResultOnTaskCompleteListener);
+            taskCompleteListeners.add(pResultTaskQueueService);
         }
     }
 
-    public void callForThis(OnTaskCompleteListener<PResult> taskCompleteListener, @NonNull Task<PResult> pResultTask)
+    public void removeFromQueue(Object listenerCriteria)
+    {
+        if (listenerCriteria==null)
+            return;
+        synchronized (waitObject)
+        {
+            Iterator<TaskQueueService<PResult>> iterator = taskCompleteListeners.descendingIterator();
+            while (iterator.hasNext())
+            {
+                TaskQueueService<PResult> pResultTaskQueueService = iterator.next();
+                if (pResultTaskQueueService.maybeRemove(listenerCriteria)) {
+                    iterator.remove();
+                    return;
+                }
+            }
+        }
+    }
+
+    public void callForThis(TaskQueueService<PResult> taskCompleteListener, @NonNull Task<PResult> pResultTask)
     {
         synchronized (waitObject)
         {
@@ -39,20 +57,20 @@ public class TaskListenerQueue<PResult> {
         }
     }
 
-    public void callComplete(@NonNull Task<PResult> pResultTask)
+    public void callQueue(@NonNull Task<PResult> pResultTask)
     {
         synchronized (waitObject)
         {
             if (taskCompleteListeners==null)
                 return;
 
-            Iterator<OnTaskCompleteListener<PResult>> iterator = taskCompleteListeners.descendingIterator();
+            Iterator<TaskQueueService<PResult>> iterator = taskCompleteListeners.descendingIterator();
             while (iterator.hasNext())
             {
-                OnTaskCompleteListener<PResult> pResultOnTaskCompleteListener = iterator.next();
-                if (pResultOnTaskCompleteListener==null)
-                    throw  new NullPointerException("OnTaskCompleteListener must not be null");
-                pResultOnTaskCompleteListener.OnTaskComplete(pResultTask);
+                TaskQueueService<PResult> pResultTaskQueueService = iterator.next();
+                if (pResultTaskQueueService ==null)
+                    throw  new NullPointerException("TaskQueueService must not be null");
+                pResultTaskQueueService.OnTaskComplete(pResultTask);
                 if (!isSynced())
                     iterator.remove();
             }
