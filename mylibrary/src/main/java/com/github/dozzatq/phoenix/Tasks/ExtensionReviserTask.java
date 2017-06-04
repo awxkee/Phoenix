@@ -1,5 +1,7 @@
 package com.github.dozzatq.phoenix.Tasks;
 
+import android.support.annotation.NonNull;
+
 import java.util.concurrent.Executor;
 
 /**
@@ -51,7 +53,7 @@ class ExtensionReviserTask<PResult, PExtension> implements OnExtensionListener<P
     }
 
     @Override
-    public void OnFailure(Exception exception) {
+    public void OnFailure(@NonNull Exception exception) {
         pExtension.setException(exception);
     }
 

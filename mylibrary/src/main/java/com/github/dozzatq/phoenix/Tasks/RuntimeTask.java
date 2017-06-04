@@ -27,12 +27,7 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
         synchronized (synchronizedObject) {
             zResult = result;
             isMayPublish = true;
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    notifyPublishListener();;
-                }
-            });
+            notifyPublishListener();
         }
     }
 
@@ -68,6 +63,12 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
         if (isMayPublish()) {
             for (final OnPublishListener<ZResult> listener : onPublishListener) {
                 try {
+                    DefaultExecutor.getInstance().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.OnPublish(getPublish());
+                        }
+                    });
                      listener.OnPublish(getPublish());
                 } catch (Exception e1) {
                     Log.d("Task<PResult>", "Bad Publish Listener");
@@ -89,7 +90,12 @@ public class RuntimeTask<PResult, ZResult> extends Task<PResult> {
                             listener.OnPublish(getPublish());
                         }
                     };
-                    handler.post(publishRunnable);
+                    DefaultExecutor.getInstance().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.OnPublish(getPublish());
+                        }
+                    });
                 } catch (Exception e) {
                     Log.d("Task<PResult>", "Bad Publish Listener");
                 }

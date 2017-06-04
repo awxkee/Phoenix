@@ -1,7 +1,5 @@
 package com.github.dozzatq.phoenix.Tasks;
 
-import java.util.concurrent.Executor;
-
 /**
  * Created by rodeon on 5/26/17.
  */
@@ -9,7 +7,6 @@ import java.util.concurrent.Executor;
 public abstract class TaskSource<PResult> {
     protected Task<PResult> task = new Task<PResult>();
     public abstract PResult call() throws Exception;
-    private Executor executor;
 
     public void setResult(PResult pResult)
     {
@@ -37,8 +34,4 @@ public abstract class TaskSource<PResult> {
         return task;
     }
 
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-        task.setExecutor(executor);
-    }
 }

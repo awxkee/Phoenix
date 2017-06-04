@@ -1,5 +1,7 @@
 package com.github.dozzatq.phoenix.Tasks;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Iterator;
@@ -55,7 +57,7 @@ public class TaskAlliance extends Task<Void> implements OnCompleteListener, OnFa
     }
 
     @Override
-    public void OnFailure(Exception exception) {
+    public void OnFailure(@NonNull Exception exception) {
         setException(exception);
     }
 

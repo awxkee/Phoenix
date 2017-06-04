@@ -1,6 +1,9 @@
 package com.github.dozzatq.phoenix.Tasks;
 
 import android.os.Handler;
+import android.support.annotation.NonNull;
+
+import java.util.concurrent.Executor;
 
 /**
  * Created by dxfb on 31.05.2017.
@@ -10,16 +13,16 @@ class UnionTask<PFirst, PNext> implements OnCompleteListener, OnFailureListener 
 
     private Task<PFirst> pFirstTask;
     private Task<PNext> pNextTask;
-    private Handler handler;
     private final Object waitObject = new Object();
     private OnUnionListener<PFirst, PNext> nextOnUnionListener;
+    private Executor executor;
 
-    public UnionTask(Task<PFirst> pFirstTask, Task<PNext> pNextTask, OnUnionListener<PFirst, PNext> nextOnUnionListener)
+    public UnionTask(Executor executor, Task<PFirst> pFirstTask, Task<PNext> pNextTask, OnUnionListener<PFirst, PNext> nextOnUnionListener)
     {
         synchronized (waitObject) {
-            handler = new Handler();
             this.pFirstTask = pFirstTask;
             this.pNextTask = pNextTask;
+            this.executor = executor;
             this.nextOnUnionListener = nextOnUnionListener;
             pFirstTask.addOnCompleteListener(this);
             pNextTask.addOnCompleteListener(this);
@@ -29,7 +32,7 @@ class UnionTask<PFirst, PNext> implements OnCompleteListener, OnFailureListener 
     }
 
     @Override
-    public void OnFailure(Exception exception) {
+    public void OnFailure(@NonNull Exception exception) {
         synchronized (waitObject) {
             if (pFirstTask == null || pNextTask == null)
                 return;
@@ -42,7 +45,7 @@ class UnionTask<PFirst, PNext> implements OnCompleteListener, OnFailureListener 
             if (pFirstTask == null || pNextTask == null)
                 return;
             if (pFirstTask.isComplete() && pNextTask.isComplete())
-                handler.post(new Runnable() {
+                executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         nextOnUnionListener.when(pFirstTask, pNextTask);
