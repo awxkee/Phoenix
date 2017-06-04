@@ -24,8 +24,6 @@ import java.util.HashMap;
 
 public class PhoenixMessaging {
 
-    private final static String ERROR_PARSE = "{error}";
-
     public static Task<String> newMessageTask(final HashMap<String, Object> dataValue,
                                        final String instanceIdToken,
                                        final String decodedAPIKey){
