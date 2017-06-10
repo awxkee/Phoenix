@@ -7,5 +7,5 @@ import android.support.annotation.NonNull;
  */
 
 public interface Extension<PResult, PExtension> {
-    PExtension then(@NonNull Task<PResult> var1) throws Exception;
+    PExtension then(@NonNull Task<PResult> task) throws Exception;
 }

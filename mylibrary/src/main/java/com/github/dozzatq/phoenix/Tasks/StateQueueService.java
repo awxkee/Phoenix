@@ -3,10 +3,10 @@ package com.github.dozzatq.phoenix.Tasks;
 import android.support.annotation.NonNull;
 
 /**
- * Created by dxfb on 04.06.2017.
+ * Created by dxfb on 10.06.2017.
  */
 
-interface TaskQueueService<PResult> {
-    public void done(@NonNull Task<PResult> pResultTask);
+interface StateQueueService<PState> {
+    public void shout(@NonNull CancellableTask<PState> pResultTask);
     public boolean maybeRemove(Object criteria);
 }

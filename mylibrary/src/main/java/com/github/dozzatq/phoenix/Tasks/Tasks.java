@@ -22,40 +22,9 @@ public class Tasks {
         threadPoolExecutor = new ThreadPoolExecutor(numCores * 2, numCores *2,
                 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
-
-
-    public static <PResult,ZResult> RuntimeTask<PResult,ZResult>
-        executeRuntime(final RuntimeTaskSource<PResult,ZResult> taskSource)
-    {
-        return executeRuntime(getDefaultExecutor(), taskSource);
-    }
-
     public static Executor getDefaultExecutor()
     {
         return threadPoolExecutor;
-    }
-
-    public static <PResult,ZResult> RuntimeTask<PResult,ZResult>
-        executeRuntime(Executor executor, final RuntimeTaskSource<PResult,ZResult> taskSource)
-    {
-        try {
-            taskSource.setPoolExecutor((ThreadPoolExecutor) executor);
-        }
-        catch (ClassCastException e)
-        {
-
-        }
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    taskSource.setResult(taskSource.call());
-                } catch (Exception e) {
-                    taskSource.setException(e);
-                }
-            }
-        });
-        return taskSource.getTask();
     }
 
     public static <PResult> PResult await(@NonNull Task<PResult> task) throws ExecutionException,InterruptedException{
@@ -103,18 +72,31 @@ public class Tasks {
         return execute(getDefaultExecutor(), taskSource);
     }
 
-    public static <PResult> Task<PResult> execute(Executor executor, final TaskSource<PResult> taskSource)
+    public static <PResult> ControllableTask<PResult> execute(final ControllableSource<PResult> controllableSource)
     {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    taskSource.setResult(taskSource.call());
-                } catch (Exception e) {
-                    taskSource.setException(e);
-                }
-            }
-        });
+        return execute(getDefaultExecutor(), controllableSource);
+    }
+
+    public static <PResult> ControllableTask<PResult> execute(Executor executor, final ControllableSource<PResult> taskSource)
+    {
+        executor.execute(taskSource.getRunnable());
+        return taskSource.getTask();
+    }
+
+    public static <PResult> CancellableTask<PResult> execute(final CancellableSource<PResult> controllableSource)
+    {
+        return execute(getDefaultExecutor(), controllableSource);
+    }
+
+    public static <PResult> CancellableTask<PResult> execute(Executor executor, final CancellableSource<PResult> taskSource)
+    {
+        executor.execute(taskSource.getRunnable());
+        return taskSource.getTask();
+    }
+
+    public static <PResult> Task<PResult> execute(Executor executor, final TaskCompletionSource<PResult> taskSource)
+    {
+        executor.execute(taskSource.getRunnable());
         return taskSource.getTask();
     }
 

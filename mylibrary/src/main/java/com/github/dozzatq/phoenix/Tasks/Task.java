@@ -1,5 +1,6 @@
 package com.github.dozzatq.phoenix.Tasks;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 
 import java.util.concurrent.Executor;
@@ -11,7 +12,7 @@ public class Task<PResult> {
     private volatile boolean isComplete;
     private volatile boolean isExcepted;
     private TaskListenerQueue<PResult> blockListenerSource = new TaskListenerQueue<>();
-    protected final Object synchronizedObject = new Object();
+    protected final Object waitObject = new Object();
 
     public Task() {
         isComplete = false;
@@ -19,20 +20,23 @@ public class Task<PResult> {
         blockListenerSource.keepSynced(true);
     }
 
+    @CallSuper
     public boolean isComplete()
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             return isComplete;
         }
     }
 
+    @CallSuper
     public boolean isSuccessful()
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             return isComplete && !isExcepted;
         }
     }
 
+    @CallSuper
     public boolean isExcepted()
     {
         return isExcepted;
@@ -40,32 +44,35 @@ public class Task<PResult> {
 
     public void setResult(PResult pResult)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             isComplete = true;
             taskResult = pResult;
             notifyCompleteListeners();
         }
     }
 
+    @CallSuper
     public Exception getException()
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             return exception;
         }
     }
 
+    @CallSuper
     public PResult getResult()
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             if (isComplete())
                 return taskResult;
             else return null;
         }
     }
 
+    @CallSuper
     public void setException(Exception exception1)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             isExcepted = true;
             exception = exception1;
             notifyCompleteListeners();
@@ -81,7 +88,7 @@ public class Task<PResult> {
     @NonNull
     public Task<PResult> addOnSuccessListener(@NonNull Executor executor, @NonNull OnSuccessListener<PResult> listener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService = new SuccessCompletionSource<>(executor, listener);
             blockListenerSource.addService(pResultTaskQueueService);
             if (isComplete())
@@ -93,7 +100,7 @@ public class Task<PResult> {
     @NonNull
     private Task<PResult> addOnExtensionListener(@NonNull OnExtensionListener<PResult> listener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService =
                     new ExtensionCompletionSource<PResult>(DefaultExecutor.getInstance(), listener);
             blockListenerSource.addService(pResultTaskQueueService);
@@ -112,7 +119,7 @@ public class Task<PResult> {
     @NonNull
     public Task<PResult> addOnFailureListener(@NonNull Executor executor, @NonNull OnFailureListener listener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService = new FailureCompletionSource<>(executor, listener);
             blockListenerSource.addService(pResultTaskQueueService);
             if (isExcepted())
@@ -121,10 +128,9 @@ public class Task<PResult> {
         }
     }
 
-
     public Task<PResult> removeOnCompleteListener(@NonNull OnCompleteListener<PResult> listener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             blockListenerSource.removeFromQueue(listener);
             return this;
         }
@@ -132,7 +138,7 @@ public class Task<PResult> {
 
     public Task<PResult> removeOnFailureListener(@NonNull OnFailureListener listener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             blockListenerSource.removeFromQueue(listener);
             return this;
         }
@@ -140,7 +146,7 @@ public class Task<PResult> {
 
     public Task<PResult> removeOnSuccessListener(@NonNull OnSuccessListener<PResult> listener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             blockListenerSource.removeFromQueue(listener);
             return this;
         }
@@ -155,8 +161,8 @@ public class Task<PResult> {
     @NonNull
     public Task<PResult> addOnCompleteListener(@NonNull Executor executor, @NonNull OnCompleteListener<PResult> listener)
     {
-        synchronized (synchronizedObject) {
-            TaskQueueService<PResult> pResultTaskQueueService = new CompleteCompletionSource<>(DefaultExecutor.getInstance(), listener);
+        synchronized (waitObject) {
+            TaskQueueService<PResult> pResultTaskQueueService = new CompleteCompletionSource<>(executor, listener);
             blockListenerSource.addService(pResultTaskQueueService);
             if (isComplete())
                 blockListenerSource.callForThis(pResultTaskQueueService, this);
@@ -171,7 +177,7 @@ public class Task<PResult> {
 
     public <PUnion> Task<PResult> createUnionWith(Executor executor,Task<PUnion> unionTask, OnUnionListener<PResult, PUnion> unionListener)
     {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             new UnionTask<PResult, PUnion>(executor,this, unionTask, unionListener);
             return this;
         }
@@ -207,30 +213,30 @@ public class Task<PResult> {
     }
 
     public Object getTaskTag() {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             return taskTag;
         }
     }
 
     public void setTaskTag(Object taskTag) {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             this.taskTag = taskTag;
         }
     }
 
-    public static final <PResult> Task<PResult> fromSource(TaskSource<PResult> taskSource)
+    public static <PResult> Task<PResult> fromSource(TaskSource<PResult> taskSource)
     {
         return Tasks.execute(taskSource);
     }
 
     public boolean isSynced() {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             return blockListenerSource.isSynced();
         }
     }
 
     public Task<PResult> keepSynced(boolean keepSynced) {
-        synchronized (synchronizedObject) {
+        synchronized (waitObject) {
             blockListenerSource.keepSynced(keepSynced);
             return this;
         }

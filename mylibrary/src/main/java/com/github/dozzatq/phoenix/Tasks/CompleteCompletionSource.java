@@ -21,7 +21,7 @@ class CompleteCompletionSource<PResult> implements TaskQueueService<PResult> {
 
 
     @Override
-    public void OnTaskComplete(@NonNull final Task<PResult> pResultTask) {
+    public void done(@NonNull final Task<PResult> pResultTask) {
         synchronized (waitObject)
         {
             if (executor==null || pResultOnCompleteListener==null)

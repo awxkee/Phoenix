@@ -14,13 +14,14 @@ class TaskListenerQueue<PResult> {
     private ArrayDeque<TaskQueueService<PResult>> taskCompleteListeners;
     private volatile boolean keepSynced;
 
+    public TaskListenerQueue()
+    {
+        taskCompleteListeners = new ArrayDeque<>();
+    }
+
     public void addService(TaskQueueService<PResult> pResultTaskQueueService)
     {
         synchronized (waitObject) {
-            if (taskCompleteListeners == null)
-            {
-                taskCompleteListeners = new ArrayDeque<>();
-            }
             taskCompleteListeners.add(pResultTaskQueueService);
         }
     }
@@ -50,7 +51,7 @@ class TaskListenerQueue<PResult> {
             if (taskCompleteListener==null)
                 return;
 
-            taskCompleteListener.OnTaskComplete(pResultTask);
+            taskCompleteListener.done(pResultTask);
             if (!isSynced())
                 if (taskCompleteListeners.contains(taskCompleteListener))
                     taskCompleteListeners.remove(taskCompleteListener);
@@ -70,7 +71,7 @@ class TaskListenerQueue<PResult> {
                 TaskQueueService<PResult> pResultTaskQueueService = iterator.next();
                 if (pResultTaskQueueService ==null)
                     throw  new NullPointerException("TaskQueueService must not be null");
-                pResultTaskQueueService.OnTaskComplete(pResultTask);
+                pResultTaskQueueService.done(pResultTask);
                 if (!isSynced())
                     iterator.remove();
             }

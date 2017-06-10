@@ -5,33 +5,31 @@ import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 04.06.2017.
+ * Created by dxfb on 10.06.2017.
  */
 
-class SuccessCompletionSource<PResult> implements TaskQueueService<PResult> {
+class CancelCompletionSource<PState> implements StateQueueService<PState> {
 
     private Executor executor;
     private final Object waitObject=new Object();
-    private OnSuccessListener<PResult> pResultOnSuccessListener;
+    private OnCanceledListener<? super PState> pResultOnSuccessListener;
 
-    public SuccessCompletionSource(Executor executor, OnSuccessListener<PResult> pResultOnSuccessListener) {
+    CancelCompletionSource(Executor executor, OnCanceledListener<? super PState> pResultOnSuccessListener) {
         this.executor = executor;
         this.pResultOnSuccessListener = pResultOnSuccessListener;
     }
 
     @Override
-    public void done(@NonNull final Task<PResult> pResultTask) {
-        synchronized (waitObject)
-        {
-            if (executor==null || pResultOnSuccessListener==null)
+    public void shout(@NonNull final CancellableTask<PState> pResultTask) {
+        synchronized (waitObject) {
+            if (executor == null || pResultOnSuccessListener == null)
                 throw new NullPointerException("Executor & OnSuccessListener must not be null!");
 
-            if (pResultTask.isSuccessful())
-            {
+            if (!pResultTask.isInProgress() && pResultTask.isCanceled()) {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        pResultOnSuccessListener.OnSuccess((PResult) pResultTask.getResult());
+                        pResultOnSuccessListener.OnCancel(pResultTask.getProgress());
                     }
                 });
             }
@@ -40,8 +38,8 @@ class SuccessCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     @Override
     public boolean maybeRemove(Object criteria) {
-        synchronized (waitObject) {
-            if (criteria instanceof OnSuccessListener)
+            synchronized (waitObject) {
+            if (criteria instanceof OnCanceledListener)
                 if (criteria.equals(pResultOnSuccessListener))
                     return true;
             return false;
