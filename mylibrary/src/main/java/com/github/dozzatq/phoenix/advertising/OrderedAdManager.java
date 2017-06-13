@@ -41,6 +41,8 @@ public class OrderedAdManager extends FactoryAd{
 
     @Override
     public void showInterstitial(final int config, final InterstitialHelper interstitialHelper) {
+        if (interstitialFailedId.size()>0 || interstitialHelpersOrder.size()>0)
+            throw new IllegalStateException("Interstitial Ads already loaded in current OrderedAdManager");
         loadInterstitial(config, new InterstitialHelper() {
             @Override
             public void OnInterstitialShowed(FactoryAd factoryAd) {
@@ -72,6 +74,8 @@ public class OrderedAdManager extends FactoryAd{
 
     @Override
     public void loadInterstitial(final int config, final InterstitialHelper interstitialHelper) {
+        if (interstitialFailedId.size()>0 || interstitialHelpersOrder.size()>0)
+            throw new IllegalStateException("Interstitial Ads already loaded in current OrderedAdManager");
         interstitialFailedId.clear();
         interstitialHelpersOrder.clear();
         for (int iOrder = 0; iOrder < factoryAdsList.size(); iOrder++) {
@@ -171,9 +175,10 @@ public class OrderedAdManager extends FactoryAd{
 
     @Override
     public void loadNative(int config, final NativeHelper nativeHelper) {
+        if (catchedOrderNativeAd!=null)
+            throw new IllegalStateException("Ads already loaded in current OrderedAdManager");
         nativeHelperFailedId.clear();
         nativeHelperOrder.clear();
-        catchedOrderNativeAd = null;
         for (int iOrder = 0; iOrder < factoryAdsList.size(); iOrder++) {
             final OrderAdState adState = new OrderAdState();
 

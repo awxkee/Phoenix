@@ -28,7 +28,7 @@ public abstract class CancellableTask<PState> extends Task<PState> {
 
     public CancellableTask<PState> addOnProgressListener(@NonNull OnProgressListener<? super PState> listener)
     {
-        return addOnProgressListener(DefaultExecutor.getInstance(), listener);
+        return addOnProgressListener(MainThreadExecutor.getInstance(), listener);
     }
 
     public CancellableTask<PState> addOnProgressListener(@NonNull Executor executor,
@@ -48,7 +48,7 @@ public abstract class CancellableTask<PState> extends Task<PState> {
 
     public CancellableTask<PState> addOnCanceledListener(@NonNull OnCanceledListener<? super PState> onCanceledListener)
     {
-        return addOnCanceledListener(DefaultExecutor.getInstance(), onCanceledListener);
+        return addOnCanceledListener(MainThreadExecutor.getInstance(), onCanceledListener);
     }
 
     @CallSuper

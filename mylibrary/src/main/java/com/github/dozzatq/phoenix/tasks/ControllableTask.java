@@ -35,7 +35,7 @@ public abstract class ControllableTask<PState> extends CancellableTask<PState> {
 
     public ControllableTask<PState> addOnPausedListener(@NonNull OnPausedListener<? super PState> onPausedListener)
     {
-        return addOnPausedListener(DefaultExecutor.getInstance(), onPausedListener);
+        return addOnPausedListener(MainThreadExecutor.getInstance(), onPausedListener);
     }
 
     public ControllableTask<PState> addOnPausedListener(@NonNull Executor executor,

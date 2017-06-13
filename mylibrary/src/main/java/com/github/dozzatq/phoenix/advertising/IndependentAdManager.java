@@ -37,6 +37,8 @@ public class IndependentAdManager extends FactoryAd {
 
     @Override
     public void loadNative(int i, final NativeHelper nativeHelper) {
+        if (isNativeAdLoaded())
+            throw new IllegalStateException("Native Ads already loaded in current IndependentAdManager");
         for (FactoryAd ad : queueList) {
             ad.loadNative(i, new NativeHelper() {
                 @Override

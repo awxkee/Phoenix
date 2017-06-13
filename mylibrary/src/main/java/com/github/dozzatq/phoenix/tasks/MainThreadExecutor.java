@@ -10,17 +10,17 @@ import java.util.concurrent.Executor;
  * Created by dxfb on 04.06.2017.
  */
 
-public class DefaultExecutor implements Executor {
+public class MainThreadExecutor implements Executor {
 
-    private static volatile DefaultExecutor instance;
+    private static volatile MainThreadExecutor instance;
 
-    public static DefaultExecutor getInstance() {
-        DefaultExecutor localInstance = instance;
+    public static MainThreadExecutor getInstance() {
+        MainThreadExecutor localInstance = instance;
         if (localInstance == null) {
-            synchronized (DefaultExecutor.class) {
+            synchronized (MainThreadExecutor.class) {
                 localInstance = instance;
                 if (localInstance == null) {
-                    instance = localInstance = new DefaultExecutor();
+                    instance = localInstance = new MainThreadExecutor();
                 }
             }
         }

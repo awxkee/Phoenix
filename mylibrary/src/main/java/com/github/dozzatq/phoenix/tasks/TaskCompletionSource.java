@@ -42,7 +42,7 @@ public abstract class TaskCompletionSource<PTask> implements Callable<PTask> {
         }
     };
 
-    final Runnable getRunnable()
+    public final Runnable getRunnable()
     {
         return taskRunnable;
     }

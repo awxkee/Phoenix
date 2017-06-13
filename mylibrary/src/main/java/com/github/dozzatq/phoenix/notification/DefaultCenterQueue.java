@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.notification;
 import android.support.annotation.NonNull;
 
 import com.github.dozzatq.phoenix.core.PhoenixCore;
-import com.github.dozzatq.phoenix.tasks.DefaultExecutor;
+import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -28,6 +28,7 @@ abstract class DefaultCenterQueue {
 
     public void addNotification(@NonNull PhoenixNotification notification)
     {
+        ExceptionThrower.throwIfNotificationNull(notification);
         synchronized (waitObject) {
             phoenixNotifications.add(notification);
         }
@@ -35,6 +36,7 @@ abstract class DefaultCenterQueue {
 
     public void removeNotification(@NonNull PhoenixNotification notification)
     {
+        ExceptionThrower.throwIfNotificationNull(notification);
         synchronized (waitObject) {
             if (phoenixNotifications.contains(notification))
                 phoenixNotifications.remove(notification);
@@ -50,13 +52,12 @@ abstract class DefaultCenterQueue {
 
     public final void doCallForCurrent(final PhoenixNotification phoenixNotification, final String notificationKey, final int delayed, final Object...values)
     {
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         synchronized (waitObject)
         {
-            if (queueExecutor==null || phoenixNotifications==null)
-                throw new NullPointerException("Executor and Queue must not be null!");
-                if (phoenixNotification==null)
-                    throw new NullPointerException("Notification must not be null!");
-                if (delayed<=0) {
+            ExceptionThrower.throwIfExecutorNull(queueExecutor);
+            throwIfQueueNull(phoenixNotifications);
+            if (delayed<=0) {
                     queueExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -65,7 +66,7 @@ abstract class DefaultCenterQueue {
                     });
                 }
                 else {
-                    DefaultExecutor.getInstance().executeDelayed(new Runnable() {
+                    MainThreadExecutor.getInstance().executeDelayed(new Runnable() {
                         @Override
                         public void run() {
                             queueExecutor.execute(new Runnable() {
@@ -86,14 +87,13 @@ abstract class DefaultCenterQueue {
     {
         synchronized (waitObject)
         {
-            if (queueExecutor==null || phoenixNotifications==null)
-                throw new NullPointerException("Executor and Queue must not be null!");
+            ExceptionThrower.throwIfExecutorNull(queueExecutor);
+            throwIfQueueNull(phoenixNotifications);
             Iterator<PhoenixNotification> iterator = phoenixNotifications.descendingIterator();
             while (iterator.hasNext())
             {
                 PhoenixNotification notification = iterator.next();
-                if (notification==null)
-                    throw new NullPointerException("Notification must not be null!");
+                ExceptionThrower.throwIfNotificationNull(notification);
                 PhoenixCore.getInstance().initiateListener(notificationKey, notification);
                 if (!isSynced())
                     iterator.remove();
@@ -105,14 +105,13 @@ abstract class DefaultCenterQueue {
     {
         synchronized (waitObject)
         {
-            if (queueExecutor==null || phoenixNotifications==null)
-                throw new NullPointerException("Executor and Queue must not be null!");
+            ExceptionThrower.throwIfExecutorNull(queueExecutor);
+            throwIfQueueNull(phoenixNotifications);
             Iterator<PhoenixNotification> iterator = phoenixNotifications.descendingIterator();
             while (iterator.hasNext())
             {
                 final PhoenixNotification notification = iterator.next();
-                if (notification==null)
-                    throw new NullPointerException("Notification must not be null!");
+                ExceptionThrower.throwIfNotificationNull(notification);
                 if (delayed<=0) {
                     queueExecutor.execute(new Runnable() {
                         @Override
@@ -122,7 +121,7 @@ abstract class DefaultCenterQueue {
                     });
                 }
                 else {
-                    DefaultExecutor.getInstance().executeDelayed(new Runnable() {
+                    MainThreadExecutor.getInstance().executeDelayed(new Runnable() {
                         @Override
                         public void run() {
                             queueExecutor.execute(new Runnable() {
@@ -138,6 +137,12 @@ abstract class DefaultCenterQueue {
                     iterator.remove();
             }
         }
+    }
+
+    private void throwIfQueueNull(ArrayDeque<PhoenixNotification> arrayDeque)
+    {
+        if (arrayDeque==null)
+            throw new NullPointerException("Queue is null. Something goes wrong!");
     }
 
     public final boolean isSynced() {

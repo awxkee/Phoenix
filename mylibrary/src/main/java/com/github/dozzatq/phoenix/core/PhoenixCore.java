@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 
 import com.github.dozzatq.phoenix.Phoenix;
 import com.github.dozzatq.phoenix.notification.PhoenixNotification;
-import com.github.dozzatq.phoenix.tasks.DefaultExecutor;
+import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,16 +47,17 @@ public class PhoenixCore {
                                               @NonNull NotificationHandler handler)
 
     {
-        return addNotificationHandler(DefaultExecutor.getInstance(), notificationKey, handler);
+        return addNotificationHandler(MainThreadExecutor.getInstance(), notificationKey, handler);
     }
 
     public PhoenixCore addNotificationHandler(@NonNull Executor executor,
                                               @NonNull String notificationKey,
                                               @NonNull NotificationHandler handler)
     {
+        ExceptionThrower.throwIfExecutorNull(executor);
+        ExceptionThrower.throwIfHandlerNull(handler);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
             CoreQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
@@ -70,9 +71,9 @@ public class PhoenixCore {
 
     public PhoenixCore removeNotificationHandler(String notificationKey, NotificationHandler handler)
     {
+        ExceptionThrower.throwIfHandlerNull(handler);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
             CoreQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
@@ -85,10 +86,8 @@ public class PhoenixCore {
 
     public void initiateListener(String notificationKey, PhoenixNotification phoenixNotification)
     {
-        if (notificationKey==null)
-            throw new NullPointerException("Notification key must not be null");
-        if (phoenixNotification==null)
-            throw new NullPointerException("Notification listener must not be null");
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
             CoreQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
@@ -101,10 +100,8 @@ public class PhoenixCore {
 
     public void initiateSingleListener(String notificationKey, PhoenixNotification phoenixNotification)
     {
-        if (notificationKey==null)
-            throw new NullPointerException("Notification key must not be null");
-        if (phoenixNotification==null)
-            throw new NullPointerException("Notification listener must not be null");
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
             CoreQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))

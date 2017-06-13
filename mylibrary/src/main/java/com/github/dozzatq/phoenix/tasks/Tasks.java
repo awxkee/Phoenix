@@ -37,8 +37,8 @@ public class Tasks {
             return getResultTask(task);
         else {
             WaiterTask waiterTask = new WaiterTask();
-            task.addOnSuccessListener(DefaultExecutor.CURRENT_THREAD_EXECUTOR, waiterTask);
-            task.addOnFailureListener(DefaultExecutor.CURRENT_THREAD_EXECUTOR, waiterTask);
+            task.addOnSuccessListener(MainThreadExecutor.CURRENT_THREAD_EXECUTOR, waiterTask);
+            task.addOnFailureListener(MainThreadExecutor.CURRENT_THREAD_EXECUTOR, waiterTask);
             waiterTask.await();
             return getResultTask(task);
         }

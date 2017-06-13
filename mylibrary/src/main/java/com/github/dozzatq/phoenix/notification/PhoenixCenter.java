@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.github.dozzatq.phoenix.core.PhoenixCore;
 import com.github.dozzatq.phoenix.Phoenix;
-import com.github.dozzatq.phoenix.tasks.DefaultExecutor;
+import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 import com.github.dozzatq.phoenix.util.PhoenixUtilities;
 
 import java.util.ArrayDeque;
@@ -45,15 +45,15 @@ public class PhoenixCenter {
 
     @AnyThread
     public PhoenixCenter addAction(@NonNull String actionKey, @NonNull OnActionComplete actionComplete) {
-        return addAction(DefaultExecutor.getInstance(), actionKey, actionComplete);
+        return addAction(MainThreadExecutor.getInstance(), actionKey, actionComplete);
     }
 
     @AnyThread
     public PhoenixCenter addAction(@NonNull Executor executor, @NonNull String actionKey, @NonNull OnActionComplete actionComplete)
     {
+        ExceptionThrower.throwIfExecutorNull(executor);
+        ExceptionThrower.throwIfActionNull(actionComplete);
         synchronized (waitObject) {
-            if (actionKey == null || actionComplete == null)
-                throw new NullPointerException("Action & OnActionComplete must not be null!");
             if (getAction(actionKey) != null)
                 removeAction(actionKey);
             actionQueue.add(new CenterAction(executor, actionKey, actionComplete));
@@ -75,9 +75,8 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter removeAction(@NonNull String actionKey)
     {
+        ExceptionThrower.throwIfQueueKeyNull(actionKey);
         synchronized (waitObject) {
-            if (actionKey == null)
-                throw new NullPointerException("Action must not be null!");
             Iterator<CenterAction> centerActionIterator = actionQueue.descendingIterator();
             while (centerActionIterator.hasNext()) {
                 CenterAction currentAction = centerActionIterator.next();
@@ -92,9 +91,8 @@ public class PhoenixCenter {
 
     private CenterAction getAction(String actionKey)
     {
+        ExceptionThrower.throwIfQueueKeyNull(actionKey);
         synchronized (waitObject) {
-            if (actionKey == null)
-                throw new NullPointerException("Action must not be null!");
             Iterator<CenterAction> centerActionIterator = actionQueue.descendingIterator();
             CenterAction resultAction = null;
             while (centerActionIterator.hasNext()) {
@@ -123,9 +121,9 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationForEventListenerDelayed(final String notificationKey, final PhoenixNotification phoenixNotification, int delayed, final Object... values)
     {
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (phoenixNotification == null)
-                throw new NullPointerException("Notification listener must not be null");
             PhoenixUtilities.runOnUIThread(new Runnable() {
                 @Override
                 public void run() {
@@ -148,9 +146,9 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationForSingleEventListenerDelayed(final String notificationKey, final PhoenixNotification phoenixNotification, int delayed, final Object... values)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         synchronized (waitObject) {
-            if (phoenixNotification == null)
-                throw new NullPointerException("Notification listener must not be null");
             if (!notificationMap.isEmpty()) {
                 if (notificationMap.containsKey(notificationKey)) {
                     DefaultCenterQueue singleList = singleNotificationMap.get(notificationKey);
@@ -169,10 +167,8 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationSingleEventListenersDelayed(final String notificationKey, int delay, final Object... values)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
-
             if (!singleNotificationMap.isEmpty()) {
                 if (singleNotificationMap.containsKey(notificationKey)) {
                     DefaultCenterQueue phoenixNotifications = singleNotificationMap.get(notificationKey);
@@ -185,9 +181,8 @@ public class PhoenixCenter {
     @AnyThread
     public void postNotificationDelayed(final String notificationKey, int delay, final Object... values)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
             if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
                 return;
             if (!notificationMap.isEmpty()) {
@@ -203,9 +198,8 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter removeAllListeners(String notificationKey)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
 
             if (notificationMap.isEmpty())
                 return this;
@@ -224,9 +218,8 @@ public class PhoenixCenter {
     @AnyThread
     public void executeHandler(String notificationKey)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
 
             if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
                 return;
@@ -244,8 +237,7 @@ public class PhoenixCenter {
     @AnyThread
     public void clearCenterForKey(String notificationKey)
     {
-        if (notificationKey == null)
-            throw new NullPointerException("Notification key must not be null");
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
 
         removeAllListeners(notificationKey);
         removeAllSingleEventListeners(notificationKey);
@@ -254,10 +246,8 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter removeAllSingleEventListeners(String notificationKey)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject) {
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
-
 
             if (singleNotificationMap.isEmpty())
                 return this;
@@ -277,12 +267,9 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter removeListener(String notificationKey, PhoenixNotification phoenixNotification)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         synchronized (waitObject) {
-            if (phoenixNotification == null)
-                throw new NullPointerException("PhoenixNotification must not be null");
-
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
 
             if (notificationMap.isEmpty())
                 return this;
@@ -301,14 +288,9 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter removeSingleEventListener(String notificationKey, PhoenixNotification phoenixNotification)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         synchronized (waitObject) {
-            if (phoenixNotification == null)
-                throw new NullPointerException("PhoenixNotification must not be null");
-
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
-
-
             if (singleNotificationMap.isEmpty())
                 return this;
 
@@ -327,19 +309,17 @@ public class PhoenixCenter {
     public PhoenixCenter addListener(@NonNull String notificationKey,
                                      @NonNull PhoenixNotification phoenixNotification)
     {
-        return addListener(DefaultExecutor.getInstance(), notificationKey, phoenixNotification);
+        return addListener(MainThreadExecutor.getInstance(), notificationKey, phoenixNotification);
     }
 
     @AnyThread
     public PhoenixCenter addListener(@NonNull Executor executor, @NonNull String notificationKey,
                                      @NonNull PhoenixNotification phoenixNotification)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
+        ExceptionThrower.throwIfExecutorNull(executor);
         synchronized (waitObject) {
-            if (phoenixNotification == null)
-                throw new NullPointerException("PhoenixNotification must not be null");
-
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
 
             CenterQueue observerList;
             if (notificationMap.containsKey(notificationKey)) {
@@ -358,7 +338,7 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter addListenerForSingleEvent(@NonNull String notificationKey,
                                                    @NonNull PhoenixNotification phoenixNotification) {
-        return addListenerForSingleEvent(DefaultExecutor.getInstance(), notificationKey, phoenixNotification);
+        return addListenerForSingleEvent(MainThreadExecutor.getInstance(), notificationKey, phoenixNotification);
     }
 
     @AnyThread
@@ -366,13 +346,10 @@ public class PhoenixCenter {
                                                    @NonNull String notificationKey,
                                                    @NonNull PhoenixNotification phoenixNotification)
     {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
+        ExceptionThrower.throwIfExecutorNull(executor);
         synchronized (waitObject) {
-            if (phoenixNotification == null)
-                throw new NullPointerException("PhoenixNotification must not be null");
-
-            if (notificationKey == null)
-                throw new NullPointerException("Notification key must not be null");
-
             SingleCenterQueue observerList;
             if (singleNotificationMap.containsKey(notificationKey)) {
                 observerList = singleNotificationMap.get(notificationKey);

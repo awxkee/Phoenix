@@ -82,7 +82,7 @@ public class Task<PResult> {
     @NonNull
     public Task<PResult> addOnSuccessListener(@NonNull OnSuccessListener<PResult> listener)
     {
-        return addOnSuccessListener(DefaultExecutor.getInstance(), listener);
+        return addOnSuccessListener(MainThreadExecutor.getInstance(), listener);
     }
 
     @NonNull
@@ -102,7 +102,7 @@ public class Task<PResult> {
     {
         synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService =
-                    new ExtensionCompletionSource<PResult>(DefaultExecutor.getInstance(), listener);
+                    new ExtensionCompletionSource<PResult>(MainThreadExecutor.getInstance(), listener);
             blockListenerSource.addService(pResultTaskQueueService);
             if (isComplete())
                 blockListenerSource.callForThis(pResultTaskQueueService, this);
@@ -113,7 +113,7 @@ public class Task<PResult> {
     @NonNull
     public Task<PResult> addOnFailureListener(@NonNull OnFailureListener listener)
     {
-        return addOnFailureListener(DefaultExecutor.getInstance(), listener);
+        return addOnFailureListener(MainThreadExecutor.getInstance(), listener);
     }
 
     @NonNull
@@ -155,7 +155,7 @@ public class Task<PResult> {
     @NonNull
     public Task<PResult> addOnCompleteListener(@NonNull OnCompleteListener<PResult> listener)
     {
-        return addOnCompleteListener(DefaultExecutor.getInstance(), listener);
+        return addOnCompleteListener(MainThreadExecutor.getInstance(), listener);
     }
 
     @NonNull
@@ -172,7 +172,7 @@ public class Task<PResult> {
 
     public <PUnion> Task<PResult> createUnionWith(Task<PUnion> unionTask, OnUnionListener<PResult, PUnion> unionListener)
     {
-        return createUnionWith(DefaultExecutor.getInstance(), unionTask, unionListener);
+        return createUnionWith(MainThreadExecutor.getInstance(), unionTask, unionListener);
     }
 
     public <PUnion> Task<PResult> createUnionWith(Executor executor,Task<PUnion> unionTask, OnUnionListener<PResult, PUnion> unionListener)
@@ -185,7 +185,7 @@ public class Task<PResult> {
 
     public <PExtension> Task<PExtension> extensionWith(@NonNull Extension<PResult, PExtension> pExtension)
     {
-        return extensionWith(DefaultExecutor.getInstance(), pExtension);
+        return extensionWith(MainThreadExecutor.getInstance(), pExtension);
     }
 
     public <PExtension> Task<PExtension> extensionWith(Executor executor, @NonNull Extension<PResult, PExtension> pExtension)
@@ -197,7 +197,7 @@ public class Task<PResult> {
 
     public <PExtension> Task<PExtension> extensionWithTask(@NonNull Extension<PResult, Task<PExtension>> pExtension)
     {
-        return extensionWithTask(DefaultExecutor.getInstance(), pExtension);
+        return extensionWithTask(MainThreadExecutor.getInstance(), pExtension);
     }
 
     public <PExtension> Task<PExtension> extensionWithTask(Executor executor, @NonNull Extension<PResult, Task<PExtension>> pExtension)

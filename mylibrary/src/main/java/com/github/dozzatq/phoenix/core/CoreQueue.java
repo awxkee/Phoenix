@@ -22,11 +22,10 @@ class CoreQueue {
 
     public void doQueueSingle(final String notificationKey, final PhoenixNotification notification)
     {
+        ExceptionThrower.throwIfNotificationNull(notification);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject)
         {
-            if (queueExecutor==null || handlerList==null) {
-                throw  new NullPointerException("Executor and Queue must not be null!");
-            }
             Iterator<NotificationHandler> iterator = handlerList.descendingIterator();
             while (iterator.hasNext())
             {
@@ -43,11 +42,10 @@ class CoreQueue {
 
     public void doQueue(final String notificationKey, final PhoenixNotification notification)
     {
+        ExceptionThrower.throwIfNotificationNull(notification);
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject)
         {
-            if (queueExecutor==null) {
-                throw  new NullPointerException("Executor and Queue must not be null!");
-            }
             Iterator<NotificationHandler> iterator = handlerList.descendingIterator();
             while (iterator.hasNext())
             {
@@ -64,7 +62,7 @@ class CoreQueue {
 
     public void addHandler(NotificationHandler notificationHandler)
     {
-        throwIfHandlerNull(notificationHandler);
+        ExceptionThrower.throwIfHandlerNull(notificationHandler);
         synchronized (waitObject)
         {
             handlerList.add(notificationHandler);
@@ -73,7 +71,7 @@ class CoreQueue {
 
     public void removeHandler(NotificationHandler notificationHandler)
     {
-        throwIfHandlerNull(notificationHandler);
+        ExceptionThrower.throwIfHandlerNull(notificationHandler);
         synchronized (waitObject)
         {
             if (handlerList.contains(notificationHandler))
@@ -81,9 +79,4 @@ class CoreQueue {
         }
     }
 
-    private void throwIfHandlerNull(NotificationHandler notificationHandler)
-    {
-        if (notificationHandler==null)
-            throw new NullPointerException("NotificationHandler must not be null!");
-    }
 }
