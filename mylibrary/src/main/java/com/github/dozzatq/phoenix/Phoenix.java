@@ -33,14 +33,14 @@ import android.view.animation.AnimationUtils;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-import com.github.dozzatq.phoenix.Core56.PhoenixCore;
-import com.github.dozzatq.phoenix.Fonts67.PhoenixTypeface;
-import com.github.dozzatq.phoenix.Notification56.OnActionComplete;
-import com.github.dozzatq.phoenix.Notification56.PhoenixCenter;
-import com.github.dozzatq.phoenix.Notification56.PhoenixNotification;
-import com.github.dozzatq.phoenix.Prefs56.PhoenixPreferences;
-import com.github.dozzatq.phoenix.Util67.PhoenixDeviceIdGenerator;
-import com.github.dozzatq.phoenix.Util67.PhoenixUtilities;
+import com.github.dozzatq.phoenix.core.PhoenixCore;
+import com.github.dozzatq.phoenix.fonts.PhoenixTypeface;
+import com.github.dozzatq.phoenix.notification.OnActionComplete;
+import com.github.dozzatq.phoenix.notification.PhoenixCenter;
+import com.github.dozzatq.phoenix.notification.PhoenixNotification;
+import com.github.dozzatq.phoenix.prefs.PhoenixPreferences;
+import com.github.dozzatq.phoenix.util.PhoenixDeviceIdGenerator;
+import com.github.dozzatq.phoenix.util.PhoenixUtilities;
 
 import java.io.File;
 import java.util.Locale;

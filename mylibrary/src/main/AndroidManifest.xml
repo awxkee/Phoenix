@@ -7,7 +7,7 @@
         <activity
             android:name="com.github.dozzatq.phoenix.share.PhoenixShareActivity"
             android:theme="@style/Blaze.AppTheme"/>
-        <service android:name=".PhoenixDownloader56.PhoenixDownloaderService"
+        <service android:name=".phoenixdownloader.PhoenixDownloaderService"
             android:exported="false"/>
 
         <provider

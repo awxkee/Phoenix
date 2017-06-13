@@ -1,8 +1,8 @@
 package com.github.dozzatq.phoenix.json;
 
-import com.github.dozzatq.phoenix.Tasks56.Task;
-import com.github.dozzatq.phoenix.Tasks56.TaskSource;
-import com.github.dozzatq.phoenix.Tasks56.Tasks;
+import com.github.dozzatq.phoenix.tasks.Task;
+import com.github.dozzatq.phoenix.tasks.TaskSource;
+import com.github.dozzatq.phoenix.tasks.Tasks;
 import com.google.gson.GsonBuilder;
 
 import org.json.JSONArray;
