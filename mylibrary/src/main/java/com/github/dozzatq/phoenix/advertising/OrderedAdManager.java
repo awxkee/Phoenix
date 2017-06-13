@@ -173,6 +173,7 @@ public class OrderedAdManager extends FactoryAd{
     public void loadNative(int config, final NativeHelper nativeHelper) {
         nativeHelperFailedId.clear();
         nativeHelperOrder.clear();
+        catchedOrderNativeAd = null;
         for (int iOrder = 0; iOrder < factoryAdsList.size(); iOrder++) {
             final OrderAdState adState = new OrderAdState();
 

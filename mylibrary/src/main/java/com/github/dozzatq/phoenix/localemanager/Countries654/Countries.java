@@ -1,4 +1,4 @@
-package com.github.dozzatq.phoenix.localemanager.Countries;
+package com.github.dozzatq.phoenix.localemanager.Countries654;
 
 public class Countries {
 
