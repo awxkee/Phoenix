@@ -1,6 +1,5 @@
 package com.github.dozzatq.phoenix;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,7 +9,6 @@ import android.database.Cursor;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -34,24 +32,15 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
-import com.github.dozzatq.phoenix.Core.PhoenixCore;
-import com.github.dozzatq.phoenix.Fonts.PhoenixTypeface;
-import com.github.dozzatq.phoenix.Notification.OnActionComplete;
-import com.github.dozzatq.phoenix.Notification.PhoenixCenter;
-import com.github.dozzatq.phoenix.Notification.PhoenixNotification;
-import com.github.dozzatq.phoenix.Prefs.PhoenixPreferences;
-import com.github.dozzatq.phoenix.Tasks.ControllableSource;
-import com.github.dozzatq.phoenix.Tasks.ControllableTask;
-import com.github.dozzatq.phoenix.Tasks.OnCanceledListener;
-import com.github.dozzatq.phoenix.Tasks.OnCompleteListener;
-import com.github.dozzatq.phoenix.Tasks.OnFailureListener;
-import com.github.dozzatq.phoenix.Tasks.OnPausedListener;
-import com.github.dozzatq.phoenix.Tasks.OnProgressListener;
-import com.github.dozzatq.phoenix.Tasks.OnSuccessListener;
-import com.github.dozzatq.phoenix.Util.PhoenixDeviceIdGenerator;
-import com.github.dozzatq.phoenix.Util.PhoenixUtilities;
+import com.github.dozzatq.phoenix.Core56.PhoenixCore;
+import com.github.dozzatq.phoenix.Fonts67.PhoenixTypeface;
+import com.github.dozzatq.phoenix.Notification56.OnActionComplete;
+import com.github.dozzatq.phoenix.Notification56.PhoenixCenter;
+import com.github.dozzatq.phoenix.Notification56.PhoenixNotification;
+import com.github.dozzatq.phoenix.Prefs56.PhoenixPreferences;
+import com.github.dozzatq.phoenix.Util67.PhoenixDeviceIdGenerator;
+import com.github.dozzatq.phoenix.Util67.PhoenixUtilities;
 
 import java.io.File;
 import java.util.Locale;
