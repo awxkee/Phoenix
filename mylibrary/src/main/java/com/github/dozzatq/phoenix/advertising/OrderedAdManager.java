@@ -330,6 +330,7 @@ public class OrderedAdManager extends FactoryAd{
         return null;
     }
 
+
     @Override
     public FactoryAd createAd() {
         factoryAdsList = new ArrayList<>();

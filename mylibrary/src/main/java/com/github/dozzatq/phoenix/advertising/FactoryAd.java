@@ -12,12 +12,12 @@ public abstract class FactoryAd extends AdCreator {
     public abstract void loadInterstitial(int config, InterstitialHelper interstitialHelper);
     public abstract void loadNative(int config, NativeHelper nativeHelper);
     public abstract View returnNativeView();
-    public abstract void bindView(View view, int bindMethod);
     public abstract void bindHolder(RecyclerView.ViewHolder viewHolder);
     public abstract boolean isInterstitialLoaded();
     public abstract String isInstance();
     public abstract boolean isNativeAdLoaded();
     public abstract void setNote(Object object);
     public abstract Object getNote();
+    public abstract void bindView(View view, int i);
     public abstract String placementForConfig(int config);
 }
