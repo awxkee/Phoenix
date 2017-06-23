@@ -41,7 +41,7 @@ class ExtensionReviserTask<PResult, PExtension> implements OnExtensionListener<P
                         }
 
                         if (pExtensionTask == null) {
-                            ExtensionReviserTask.this.OnFailure(new NullPointerException("Extension returned null"));
+                            ExtensionReviserTask.this.OnFailure(new NullPointerException("Extension task returned null"));
                         } else {
                             pExtensionTask.addOnCompleteListener(ExtensionReviserTask.this);
                             pExtensionTask.addOnFailureListener(ExtensionReviserTask.this);

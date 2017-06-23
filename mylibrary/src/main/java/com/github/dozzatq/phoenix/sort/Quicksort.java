@@ -54,8 +54,6 @@ public class Quicksort<T> {
         return quicksortExecutor.sortAsync();
     }
 
-
-
     public Task<T[]> sortAsync(Executor executor, T[] values, @NonNull Comparator<T> comparator)
     {
         QuicksortExecutor<T> quicksortExecutor = new QuicksortExecutor<T>(MainThreadExecutor.CURRENT_THREAD_EXECUTOR,

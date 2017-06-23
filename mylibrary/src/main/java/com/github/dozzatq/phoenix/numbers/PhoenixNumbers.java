@@ -10,22 +10,8 @@ import java.util.regex.Pattern;
 public class PhoenixNumbers {
 
     private static Pattern pattern = Pattern.compile("[\\-0-9]+");
-    private static SecureRandom random = new SecureRandom();
 
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
-    static {
-        try {
-            File URANDOM_FILE = new File("/dev/urandom");
-            FileInputStream sUrandomIn = new FileInputStream(URANDOM_FILE);
-            byte[] buffer = new byte[1024];
-            sUrandomIn.read(buffer);
-            sUrandomIn.close();
-            random.setSeed(buffer);
-        } catch (Exception e) {
-
-        }
-    }
 
     public static Integer parseInt(String value) {
         if (value == null) {

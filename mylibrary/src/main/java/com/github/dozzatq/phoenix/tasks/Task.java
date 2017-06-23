@@ -11,13 +11,13 @@ public class Task<PResult> {
     private volatile Object taskTag;
     private volatile boolean isComplete;
     private volatile boolean isExcepted;
-    private TaskListenerQueue<PResult> blockListenerSource = new TaskListenerQueue<>();
+    private TaskListenerQueue<PResult> queueListeners = new TaskListenerQueue<>();
     protected final Object waitObject = new Object();
 
     public Task() {
         isComplete = false;
         isExcepted = false;
-        blockListenerSource.keepSynced(true);
+        queueListeners.keepSynced(true);
     }
 
     @CallSuper
@@ -90,9 +90,9 @@ public class Task<PResult> {
     {
         synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService = new SuccessCompletionSource<>(executor, listener);
-            blockListenerSource.addService(pResultTaskQueueService);
-            if (isComplete())
-                blockListenerSource.callForThis(pResultTaskQueueService, this);
+            queueListeners.addService(pResultTaskQueueService);
+            if (isSuccessful())
+                queueListeners.callForThis(pResultTaskQueueService, this);
             return this;
         }
     }
@@ -103,9 +103,9 @@ public class Task<PResult> {
         synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService =
                     new ExtensionCompletionSource<PResult>(MainThreadExecutor.getInstance(), listener);
-            blockListenerSource.addService(pResultTaskQueueService);
+            queueListeners.addService(pResultTaskQueueService);
             if (isComplete())
-                blockListenerSource.callForThis(pResultTaskQueueService, this);
+                queueListeners.callForThis(pResultTaskQueueService, this);
             return this;
         }
     }
@@ -121,9 +121,61 @@ public class Task<PResult> {
     {
         synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService = new FailureCompletionSource<>(executor, listener);
-            blockListenerSource.addService(pResultTaskQueueService);
+            queueListeners.addService(pResultTaskQueueService);
             if (isExcepted())
-                blockListenerSource.callForThis(pResultTaskQueueService, this);
+                queueListeners.callForThis(pResultTaskQueueService, this);
+            return this;
+        }
+    }
+
+    @NonNull
+    public Task<PResult> addOnTaskSuccessListener(@NonNull OnTaskSuccessListener<PResult> listener)
+    {
+        return addOnTaskSuccessListener(MainThreadExecutor.getInstance(), listener);
+    }
+
+    @NonNull
+    public Task<PResult> addOnTaskSuccessListener(@NonNull Executor executor, @NonNull OnTaskSuccessListener<PResult> listener)
+    {
+        synchronized (waitObject) {
+            TaskQueueService<PResult> pResultTaskQueueService = new TaskSuccessCompletionSource<>(executor, listener);
+            queueListeners.addService(pResultTaskQueueService);
+            if (isSuccessful())
+                queueListeners.callForThis(pResultTaskQueueService, this);
+            return this;
+        }
+    }
+
+    @NonNull
+    public Task<PResult> addOnTaskFailureListener(@NonNull OnTaskFailureListener<PResult> listener)
+    {
+        return addOnTaskFailureListener(MainThreadExecutor.getInstance(), listener);
+    }
+
+    @NonNull
+    public Task<PResult> addOnTaskFailureListener(@NonNull Executor executor, @NonNull OnTaskFailureListener<PResult> listener)
+    {
+        synchronized (waitObject) {
+            TaskQueueService<PResult> pResultTaskQueueService = new TaskFailureCompletionSource<>(executor, listener);
+            queueListeners.addService(pResultTaskQueueService);
+            if (isExcepted())
+                queueListeners.callForThis(pResultTaskQueueService, this);
+            return this;
+        }
+    }
+
+    public Task<PResult> removeOnTaskSuccessListener(@NonNull OnTaskSuccessListener<PResult> listener)
+    {
+        synchronized (waitObject) {
+            queueListeners.removeFromQueue(listener);
+            return this;
+        }
+    }
+
+    public Task<PResult> removeOnTaskFailureListener(@NonNull OnTaskFailureListener<PResult> listener)
+    {
+        synchronized (waitObject) {
+            queueListeners.removeFromQueue(listener);
             return this;
         }
     }
@@ -131,7 +183,7 @@ public class Task<PResult> {
     public Task<PResult> removeOnCompleteListener(@NonNull OnCompleteListener<PResult> listener)
     {
         synchronized (waitObject) {
-            blockListenerSource.removeFromQueue(listener);
+            queueListeners.removeFromQueue(listener);
             return this;
         }
     }
@@ -139,7 +191,7 @@ public class Task<PResult> {
     public Task<PResult> removeOnFailureListener(@NonNull OnFailureListener listener)
     {
         synchronized (waitObject) {
-            blockListenerSource.removeFromQueue(listener);
+            queueListeners.removeFromQueue(listener);
             return this;
         }
     }
@@ -147,7 +199,7 @@ public class Task<PResult> {
     public Task<PResult> removeOnSuccessListener(@NonNull OnSuccessListener<PResult> listener)
     {
         synchronized (waitObject) {
-            blockListenerSource.removeFromQueue(listener);
+            queueListeners.removeFromQueue(listener);
             return this;
         }
     }
@@ -163,9 +215,9 @@ public class Task<PResult> {
     {
         synchronized (waitObject) {
             TaskQueueService<PResult> pResultTaskQueueService = new CompleteCompletionSource<>(executor, listener);
-            blockListenerSource.addService(pResultTaskQueueService);
+            queueListeners.addService(pResultTaskQueueService);
             if (isComplete())
-                blockListenerSource.callForThis(pResultTaskQueueService, this);
+                queueListeners.callForThis(pResultTaskQueueService, this);
         }
         return this;
     }
@@ -209,7 +261,7 @@ public class Task<PResult> {
 
     private void notifyCompleteListeners()
     {
-        blockListenerSource.callQueue(this);
+        queueListeners.callQueue(this);
     }
 
     public Object getTaskTag() {
@@ -231,13 +283,13 @@ public class Task<PResult> {
 
     public boolean isSynced() {
         synchronized (waitObject) {
-            return blockListenerSource.isSynced();
+            return queueListeners.isSynced();
         }
     }
 
     public Task<PResult> keepSynced(boolean keepSynced) {
         synchronized (waitObject) {
-            blockListenerSource.keepSynced(keepSynced);
+            queueListeners.keepSynced(keepSynced);
             return this;
         }
     }

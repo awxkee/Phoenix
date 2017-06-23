@@ -53,7 +53,7 @@ public class PhoenixDownloaderService extends Service {
             String receiver = intentBundle.getString(PhoenixDownloaderConfig.PARAM_RECEIVER);
             String downloadUrl = intentBundle.getString(PhoenixDownloaderConfig.PARAM_URL);
             if (filename==null)
-                filename = getCacheDir().getPath() + PhoenixIdGenerator.generatePushId();
+                filename = getCacheDir().getPath() + PhoenixIdGenerator.generate();
 
             if (downloadUrl==null)
                 stopSelf(msg.arg1);

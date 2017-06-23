@@ -30,7 +30,7 @@ public class PhoenixMessaging {
             public String call() throws Exception {
                 HttpURLConnection urlConnection = null;
                 FirebaseData firebaseData = new FirebaseData();
-                firebaseData.setCollapseKey(PhoenixIdGenerator.generatePushId());
+                firebaseData.setCollapseKey(PhoenixIdGenerator.generate());
                 Gson gsonParser = new Gson();
                 firebaseData.setTo(instanceIdToken);
                 firebaseData.setData(dataValue);

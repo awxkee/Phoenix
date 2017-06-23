@@ -57,6 +57,26 @@ public class Tasks {
         return new TaskAlliance(tasks);
     }
 
+    public static TaskAlliance whenAll(Task... tasks)
+    {
+        return allianceTask(tasks);
+    }
+
+    public static TaskAlliance whenAll(Collection<? extends Task<?>> taskCollection)
+    {
+        return allianceTask(taskCollection);
+    }
+
+    public static TaskUnion whenSame(Task... tasks)
+    {
+        return new TaskUnion(tasks);
+    }
+
+    public static TaskUnion whenSame(Collection<? extends Task<?>> taskCollection)
+    {
+        return new TaskUnion(taskCollection);
+    }
+
     public static TaskAlliance allianceTask(Collection<? extends Task<?>> taskCollection)
     {
         return new TaskAlliance(taskCollection);

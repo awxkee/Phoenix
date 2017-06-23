@@ -10,15 +10,16 @@ import java.util.Iterator;
  * Created by dxfb on 30.05.2017.
  */
 
-public class TaskAlliance extends Task<Void> implements OnCompleteListener, OnFailureListener {
+public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, OnTaskFailureListener {
 
-    private ArrayDeque<Task> allianceTasks = new ArrayDeque<>();
+    protected int taskCount = 0;
+    protected final Object waitObject = new Object();
 
     public TaskAlliance(Task... tasks)
     {
         for (Task task : tasks) {
             addEndPointForEach(task);
-            allianceTasks.add(task);
+            taskCount++;
         }
     }
 
@@ -26,56 +27,72 @@ public class TaskAlliance extends Task<Void> implements OnCompleteListener, OnFa
     {
         for (Task task : taskCollection) {
             addEndPointForEach(task);
-            allianceTasks.add(task);
+            taskCount++;
         }
     }
 
     public TaskAlliance(Task task)
     {
         addEndPointForEach(task);
-        allianceTasks.add(task);
-    }
-
-    public TaskAlliance addTask(Task task)
-    {
-        addEndPointForEach(task);
-        allianceTasks.add(task);
-        return this;
-    }
-
-    public TaskAlliance removeTask(Task task)
-    {
-        if (allianceTasks.contains(task))
-            allianceTasks.remove(task);
-        return this;
+        taskCount++;
     }
 
     private void addEndPointForEach(Task task)
     {
-        task.addOnCompleteListener(this);
-        task.addOnFailureListener(this);
+        task.addOnTaskSuccessListener(this);
+        task.addOnTaskFailureListener(this);
     }
 
-    @Override
-    public void OnFailure(@NonNull Exception exception) {
-        setException(exception);
-    }
+    ArrayDeque<Task> exceptedTask= new ArrayDeque<>();
+    ArrayDeque<Task> successTask = new ArrayDeque<>();
 
-    @Override
-    public void OnComplete(Object o) {
-        boolean hasNoComplete = false;
+    protected Exception exception;
+    private volatile boolean hasException;
 
-        Iterator<Task> taskIterator = allianceTasks.descendingIterator();
-        while (taskIterator.hasNext())
+    boolean hasExcepted()
+    {
+        synchronized (waitObject)
         {
-            Task allianceTask  = taskIterator.next();
-            if (!allianceTask.isComplete())
+            return hasException;
+        }
+    }
+
+    protected void checkTasks()
+    {
+        synchronized (waitObject)
+        {
+            if (exceptedTask.size() + successTask.size() == taskCount)
             {
-                hasNoComplete = true;
+                if (hasExcepted())
+                    setException(exception);
+                else
+                    setResult(null);
+
+                exceptedTask.clear();
+                successTask.clear();
             }
         }
-        if (!hasNoComplete )
-            setResult(null);
     }
 
+    @Override
+    public void OnTaskException(@NonNull Task task) {
+        synchronized (waitObject)
+        {
+            if (!exceptedTask.contains(task))
+                exceptedTask.add(task);
+            hasException = true;
+            exception = task.getException();
+            checkTasks();
+        }
+    }
+
+    @Override
+    public void OnTaskSuccess(@NonNull Task task) {
+        synchronized (waitObject)
+        {
+            if (!successTask.contains(task))
+                successTask.add(task);
+            checkTasks();
+        }
+    }
 }
