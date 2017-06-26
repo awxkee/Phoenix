@@ -1,12 +1,14 @@
 package com.github.dozzatq.phoenix.tasks;
 
+import android.support.annotation.NonNull;
+
 import java.util.concurrent.Executor;
 
 /**
  * Created by dxfb on 28.05.2017.
  */
 
-class ExtensionReviser<PResult, PExtension> implements OnExtensionListener<PResult> {
+class ExtensionReviser<PResult, PExtension> implements OnTaskSuccessListener<PResult> {
 
     private Executor executor;
     private Extension<PResult, PExtension> extensionTask;
@@ -22,7 +24,7 @@ class ExtensionReviser<PResult, PExtension> implements OnExtensionListener<PResu
     }
 
     @Override
-    public void OnExtension(final Task<PResult> pResult) {
+    public void OnTaskSuccess(@NonNull final Task<PResult> pResult) {
         synchronized (waitObject) {
             executor.execute(new Runnable() {
                 @Override

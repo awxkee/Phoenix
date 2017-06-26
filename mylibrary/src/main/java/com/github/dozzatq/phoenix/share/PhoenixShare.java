@@ -46,12 +46,14 @@ public class PhoenixShare {
         callbackHashMap.put(packageS, customShareCallback);
     }
 
-    public String getVkPackageName()
+    public static String getVkPackageName()
     {
         return "com.vkontakte.android";
     }
 
-    public String getFacebookName () { return  "com.facebook.katana"; }
+    public static String getFacebookName () { return  "com.facebook.katana"; }
+
+    public static String getWhatsup () { return  "com.whatsapp"; }
 
     public void show()
     {

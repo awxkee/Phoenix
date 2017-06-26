@@ -12,8 +12,8 @@ import java.util.Iterator;
 
 public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, OnTaskFailureListener {
 
-    protected int taskCount = 0;
-    protected final Object waitObject = new Object();
+    int taskCount = 0;
+    final Object waitObject = new Object();
 
     public TaskAlliance(Task... tasks)
     {
@@ -23,7 +23,7 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
         }
     }
 
-    public TaskAlliance(Collection<? extends Task<?>> taskCollection)
+    public TaskAlliance(Collection<Task> taskCollection)
     {
         for (Task task : taskCollection) {
             addEndPointForEach(task);
@@ -43,10 +43,10 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
         task.addOnTaskFailureListener(this);
     }
 
-    ArrayDeque<Task> exceptedTask= new ArrayDeque<>();
+    ArrayDeque<Task> exceptedTask = new ArrayDeque<>();
     ArrayDeque<Task> successTask = new ArrayDeque<>();
 
-    protected Exception exception;
+    Exception exception;
     private volatile boolean hasException;
 
     boolean hasExcepted()

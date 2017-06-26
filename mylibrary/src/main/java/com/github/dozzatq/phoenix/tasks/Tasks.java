@@ -7,9 +7,11 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by rodeon on 5/26/17.
@@ -62,7 +64,7 @@ public class Tasks {
         return allianceTask(tasks);
     }
 
-    public static TaskAlliance whenAll(Collection<? extends Task<?>> taskCollection)
+    public static TaskAlliance whenAll(Collection<Task> taskCollection)
     {
         return allianceTask(taskCollection);
     }
@@ -72,12 +74,12 @@ public class Tasks {
         return new TaskUnion(tasks);
     }
 
-    public static TaskUnion whenSame(Collection<? extends Task<?>> taskCollection)
+    public static TaskUnion whenSame(Collection<Task> taskCollection)
     {
         return new TaskUnion(taskCollection);
     }
 
-    public static TaskAlliance allianceTask(Collection<? extends Task<?>> taskCollection)
+    public static TaskAlliance allianceTask(Collection<Task> taskCollection)
     {
         return new TaskAlliance(taskCollection);
     }
@@ -131,7 +133,7 @@ public class Tasks {
             this.zztj.await();
         }
 
-        public boolean await(long var1, TimeUnit var3) throws InterruptedException {
+        public boolean await(long var1, TimeUnit var3) throws InterruptedException, TimeoutException {
             return this.zztj.await(var1, var3);
         }
 

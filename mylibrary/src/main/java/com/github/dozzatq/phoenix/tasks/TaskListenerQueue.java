@@ -14,7 +14,7 @@ class TaskListenerQueue<PResult> {
     private ArrayDeque<TaskQueueService<PResult>> taskCompleteListeners;
     private volatile boolean keepSynced;
 
-    public TaskListenerQueue()
+    TaskListenerQueue()
     {
         taskCompleteListeners = new ArrayDeque<>();
     }

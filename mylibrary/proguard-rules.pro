@@ -25,7 +25,7 @@
 }
 
 -keepclasseswithmembers class com.github.dozzatq.phoenix.auth.** { *; }
--keepclasseswithmembers class com.github.dozzatq.phoenix.cloudMessaging.FirebaseData { *; }
+-keepclasseswithmembers class com.github.dozzatq.phoenix.cloudmessaging.FirebaseData { *; }
 
 -keep public interface com.github.dozzatq.phoenix.tasks.OnCompleteListener { *;}
 -keep public interface com.github.dozzatq.phoenix.tasks.OnFailureListener { *;}

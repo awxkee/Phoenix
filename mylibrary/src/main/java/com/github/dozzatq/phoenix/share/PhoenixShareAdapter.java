@@ -14,11 +14,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.StateSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.dozzatq.phoenix.R;
+import com.github.dozzatq.phoenix.tasks.OnSuccessListener;
+import com.github.dozzatq.phoenix.tasks.Task;
+import com.github.dozzatq.phoenix.tasks.TaskSource;
+import com.github.dozzatq.phoenix.tasks.Tasks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,24 +52,27 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         {
             throw new NullPointerException("shareIntent in PhoenixShareAdapter not be null!");
         }
-        new Thread(new Runnable() {
+        packageManager = appContext.getPackageManager();
+        TaskSource<List<ResolveInfo>> listTaskSource = new TaskSource<List<ResolveInfo>>() {
             @Override
-            public void run() {
-                activities = appContext.getPackageManager().queryIntentActivities (shareIntent, 0);
-                packageManager = appContext.getPackageManager();
+            public List<ResolveInfo> call() throws Exception {
+                List<ResolveInfo> activities = appContext.getPackageManager().queryIntentActivities (shareIntent, 0);
                 if (packageManager==null)
                 {
                     throw new NullPointerException("appContext.getPackageManager in PhoenixShareAdapter not be null!");
                 }
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
+                return activities;
             }
-        }).start();
+        };
+        Tasks.execute(listTaskSource)
+                .keepSynced(false)
+                .addOnSuccessListener(new OnSuccessListener<List<ResolveInfo>>() {
+            @Override
+            public void OnSuccess(List<ResolveInfo> resolveInfos) {
+                activities = new ArrayList<>();
+                activities.addAll(resolveInfos);
+            }
+        });
     }
 
     @Override
@@ -118,7 +127,7 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 holder.itemView.setSelected(false);
             }
 
-         /*   holder.itemView.setOnTouchListener(new View.OnTouchListener() {
+            holder.itemView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     if (event.getAction()==MotionEvent.ACTION_BUTTON_PRESS)
@@ -128,6 +137,7 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                             return false;
 
                         if (holder.getAdapterPosition() != mCurrentSelectedPosition) {
+
                             mCurrentSelectedPosition = holder.getAdapterPosition();
 
                             if (oldSelectedPosition != -1) {
@@ -135,13 +145,15 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                                 yourViewHolder.itemView.setSelected(false);
                             }
 
+                            notifyItemChanged(oldSelectedPosition);
+
                             PhoenixShareHolder yourViewHolder = (PhoenixShareHolder) recyclerView.findViewHolderForLayoutPosition(mCurrentSelectedPosition);
                             yourViewHolder.itemView.setSelected(true);
                         }
                     }
                     return false;
                 }
-            });*/
+            });
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

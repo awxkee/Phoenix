@@ -14,7 +14,7 @@ class CancellableListenerQueue<PState> {
     private ArrayDeque<StateQueueService<PState>> taskProgressListener;
     private volatile boolean keepSynced;
 
-    public CancellableListenerQueue() {
+    CancellableListenerQueue() {
         taskProgressListener = new ArrayDeque<>();
     }
 

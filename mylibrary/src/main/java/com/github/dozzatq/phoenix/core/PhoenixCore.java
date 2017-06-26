@@ -94,7 +94,7 @@ public class PhoenixCore {
                 notificationHandlerList = handlerList.get(notificationKey);
             if (notificationHandlerList == null)
                 return;
-            notificationHandlerList.doQueue(notificationKey, phoenixNotification);
+            notificationHandlerList.doHandler(notificationKey, phoenixNotification);
         }
     }
 
@@ -108,7 +108,7 @@ public class PhoenixCore {
                 notificationHandlerList = handlerList.get(notificationKey);
             if (notificationHandlerList == null)
                 return;
-            notificationHandlerList.doQueueSingle(notificationKey, phoenixNotification);
+            notificationHandlerList.doHandlerSingle(notificationKey, phoenixNotification);
         }
     }
 }

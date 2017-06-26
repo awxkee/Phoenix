@@ -330,7 +330,6 @@ public class PhoenixCenter {
             }
             observerList.addNotification(phoenixNotification);
             PhoenixCore.getInstance().initiateListener(notificationKey, phoenixNotification);
-
             return this;
         }
     }

@@ -7,8 +7,6 @@
         <activity
             android:name="com.github.dozzatq.phoenix.share.PhoenixShareActivity"
             android:theme="@style/Blaze.AppTheme"/>
-        <service android:name=".phoenixdownloader.PhoenixDownloaderService"
-            android:exported="false"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"

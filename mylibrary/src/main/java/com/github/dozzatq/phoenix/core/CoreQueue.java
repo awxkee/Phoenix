@@ -20,7 +20,7 @@ class CoreQueue {
         this.handlerList = new ArrayDeque<>();
     }
 
-    public void doQueueSingle(final String notificationKey, final PhoenixNotification notification)
+    public void doHandlerSingle(final String notificationKey, final PhoenixNotification notification)
     {
         ExceptionThrower.throwIfNotificationNull(notification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
@@ -40,7 +40,7 @@ class CoreQueue {
         }
     }
 
-    public void doQueue(final String notificationKey, final PhoenixNotification notification)
+    public void doHandler(final String notificationKey, final PhoenixNotification notification)
     {
         ExceptionThrower.throwIfNotificationNull(notification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);

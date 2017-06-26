@@ -8,7 +8,7 @@ import java.util.concurrent.Executor;
  * Created by dxfb on 27.05.2017.
  */
 
-class ExtensionReviserTask<PResult, PExtension> implements OnExtensionListener<PResult>,
+class ExtensionReviserTask<PResult, PExtension> implements OnTaskSuccessListener<PResult>,
         OnFailureListener,
         OnCompleteListener<PExtension> {
 
@@ -26,7 +26,7 @@ class ExtensionReviserTask<PResult, PExtension> implements OnExtensionListener<P
     }
 
     @Override
-    public void OnExtension(final Task<PResult> pResult)
+    public void OnTaskSuccess(@NonNull final Task<PResult> pResult)
     {
         synchronized (waitObject) {
             executor.execute(new Runnable() {

@@ -53,7 +53,7 @@ public class PhoenixPrefsScheme {
         getPrefs().edit().clear().apply();
     }
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     public void clearPrefsFuture()
     {
         getPrefs().edit().clear().commit();

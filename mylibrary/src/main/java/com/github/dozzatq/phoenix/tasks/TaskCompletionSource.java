@@ -9,6 +9,7 @@ import java.util.concurrent.Callable;
 public abstract class TaskCompletionSource<PTask> implements Callable<PTask> {
     public abstract Task<PTask> getTask();
 
+
     public final void setResult(PTask pResult)
     {
         try{

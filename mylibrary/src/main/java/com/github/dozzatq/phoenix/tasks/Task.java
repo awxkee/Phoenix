@@ -98,19 +98,6 @@ public class Task<PResult> {
     }
 
     @NonNull
-    private Task<PResult> addOnExtensionListener(@NonNull OnExtensionListener<PResult> listener)
-    {
-        synchronized (waitObject) {
-            TaskQueueService<PResult> pResultTaskQueueService =
-                    new ExtensionCompletionSource<PResult>(MainThreadExecutor.getInstance(), listener);
-            queueListeners.addService(pResultTaskQueueService);
-            if (isComplete())
-                queueListeners.callForThis(pResultTaskQueueService, this);
-            return this;
-        }
-    }
-
-    @NonNull
     public Task<PResult> addOnFailureListener(@NonNull OnFailureListener listener)
     {
         return addOnFailureListener(MainThreadExecutor.getInstance(), listener);
@@ -243,7 +230,7 @@ public class Task<PResult> {
     public <PExtension> Task<PExtension> extensionWith(Executor executor, @NonNull Extension<PResult, PExtension> pExtension)
     {
         Task<PExtension> taskExtension = new Task<PExtension>();
-        addOnExtensionListener(new ExtensionReviser<PResult, PExtension>(executor, pExtension, taskExtension));
+        addOnTaskSuccessListener(new ExtensionReviser<PResult, PExtension>(executor, pExtension, taskExtension));
         return taskExtension;
     }
 
@@ -255,7 +242,7 @@ public class Task<PResult> {
     public <PExtension> Task<PExtension> extensionWithTask(Executor executor, @NonNull Extension<PResult, Task<PExtension>> pExtension)
     {
         Task<PExtension> taskExtension = new Task<PExtension>();
-        addOnExtensionListener(new ExtensionReviserTask<PResult, PExtension>(executor, pExtension, taskExtension));
+        addOnTaskSuccessListener(new ExtensionReviserTask<PResult, PExtension>(executor, pExtension, taskExtension));
         return taskExtension;
     }
 
