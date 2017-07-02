@@ -2,16 +2,28 @@ package com.github.dozzatq.phoenix.notification;
 
 import android.support.annotation.NonNull;
 
+import com.github.dozzatq.phoenix.activity.StreetPolice;
 import com.github.dozzatq.phoenix.notification.PhoenixCenter;
 import com.github.dozzatq.phoenix.notification.PhoenixNotification;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 /**
  * Created by Rodion Bartoshyk on 08.12.2016.
  */
 
 public abstract class NotificationHandler {
+
+    public void batchNotification(@NonNull String key, @NonNull ArrayDeque<PhoenixNotification> phoenixNotifications)
+    {
+        PhoenixNotification notification;
+        while ((notification = phoenixNotifications.poll())!=null)
+        {
+            didNeedNotification(key, notification);
+        }
+    }
+
     public abstract void didNeedNotification(@NonNull String key, @NonNull PhoenixNotification phoenixNotification);
 
     public final void whisper(@NonNull String key, @NonNull PhoenixNotification phoenixNotification, Object... values)

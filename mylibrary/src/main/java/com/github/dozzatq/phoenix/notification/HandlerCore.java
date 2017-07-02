@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 
 import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -33,7 +34,7 @@ public class HandlerCore {
         return localInstance;
     }
 
-    private Map<String, HanlderQueue> handlerList;
+    private Map<String, HandlerQueue> handlerList;
 
     private HandlerCore() {
         handlerList = new HashMap<>();
@@ -56,11 +57,11 @@ public class HandlerCore {
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            HanlderQueue notificationHandlerList = null;
+            HandlerQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
             else
-                notificationHandlerList = new HanlderQueue(executor);
+                notificationHandlerList = new HandlerQueue(executor);
             notificationHandlerList.addHandler(handler);
             handlerList.put(notificationKey, notificationHandlerList);
             return this;
@@ -83,7 +84,7 @@ public class HandlerCore {
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            HanlderQueue notificationHandlerList = null;
+            HandlerQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
             if (notificationHandlerList == null)
@@ -94,17 +95,36 @@ public class HandlerCore {
     }
 
     @AnyThread
-    public void initiateListener(@NonNull String notificationKey, @NonNull PhoenixNotification phoenixNotification)
+    void beginBatchedUpdate(@NonNull String notificationKey, ArrayDeque<PhoenixNotification> phoenixNotifications)
+    {
+        synchronized (mLock) {
+            ExceptionThrower.throwIfNotificationNull(phoenixNotifications);
+            ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+            synchronized (mLock) {
+                HandlerQueue notificationHandlerList = null;
+                if (handlerList.containsKey(notificationKey))
+                    notificationHandlerList = handlerList.get(notificationKey);
+                if (notificationHandlerList == null)
+                    return;
+                notificationHandlerList.doHandler(notificationKey, phoenixNotifications);
+            }
+        }
+    }
+
+    @AnyThread
+    void initiateListener(@NonNull String notificationKey, @NonNull PhoenixNotification phoenixNotification)
     {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            HanlderQueue notificationHandlerList = null;
+            HandlerQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
             if (notificationHandlerList == null)
                 return;
-            notificationHandlerList.doHandler(notificationKey, phoenixNotification);
+            ArrayDeque<PhoenixNotification> phoenixNotifications = new ArrayDeque<PhoenixNotification>();
+            phoenixNotifications.push(phoenixNotification);
+            notificationHandlerList.doHandler(notificationKey, phoenixNotifications);
         }
     }
 }

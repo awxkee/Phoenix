@@ -3,6 +3,7 @@ package com.github.dozzatq.phoenix.notification;
 import com.github.dozzatq.phoenix.activity.CallbackSupplier;
 import com.github.dozzatq.phoenix.activity.StreetPolice;
 
+import java.util.ArrayDeque;
 import java.util.concurrent.Executor;
 
 /**
@@ -14,6 +15,12 @@ class ExceptionThrower {
     {
         if (notification==null)
             throw new NullPointerException("Notification Listener must not be null!");
+    }
+
+    static void throwIfNotificationNull(ArrayDeque<PhoenixNotification> notification)
+    {
+        if (notification==null)
+            throw new NullPointerException("Array Notification Listener must not be null!");
     }
 
     static void throwIfSupplierNull(CallbackSupplier notification)

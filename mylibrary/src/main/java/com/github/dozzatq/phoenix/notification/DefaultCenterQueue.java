@@ -191,6 +191,7 @@ abstract class DefaultCenterQueue {
             ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
             Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
+            ArrayDeque<PhoenixNotification> phoenixNotifications = new ArrayDeque<PhoenixNotification>();
             while (iterator.hasNext())
             {
                 NotificationSupplier<PhoenixNotification> notification = iterator.next();
@@ -199,8 +200,11 @@ abstract class DefaultCenterQueue {
                     iterator.remove();
                     continue;
                 }
-                HandlerCore.getInstance().initiateListener(notificationKey, notification.get());
+                if (!notification.isStopped())
+                    phoenixNotifications.push(notification.get());
+
             }
+            HandlerCore.getInstance().beginBatchedUpdate(notificationKey, phoenixNotifications);
         }
     }
 

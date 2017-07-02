@@ -11,18 +11,18 @@ import java.util.concurrent.Executor;
  * Created by Rodion Bartoshyk on 04.06.2017.
  */
 
-class HanlderQueue {
+class HandlerQueue {
     private ArrayDeque<NotificationHandler> handlerList;
     private Executor queueExecutor;
     private final Object waitObject = new Object();
 
-    HanlderQueue(Executor queueExecutor) {
+    HandlerQueue(Executor queueExecutor) {
         this.queueExecutor = queueExecutor;
         this.handlerList = new ArrayDeque<>();
     }
 
     @AnyThread
-    public void doHandler(@NonNull final String notificationKey, @NonNull final PhoenixNotification notification)
+    public void doHandler(@NonNull final String notificationKey, @NonNull final ArrayDeque<PhoenixNotification> notification)
     {
         ExceptionThrower.throwIfNotificationNull(notification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
@@ -35,7 +35,7 @@ class HanlderQueue {
                 queueExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        handler.didNeedNotification(notificationKey, notification);
+                        handler.batchNotification(notificationKey, notification);
                     }
                 });
             }
