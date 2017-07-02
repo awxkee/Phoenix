@@ -27,14 +27,16 @@
 -keepclasseswithmembers class com.github.dozzatq.phoenix.auth.** { *; }
 -keepclasseswithmembers class com.github.dozzatq.phoenix.cloudmessaging.FirebaseData { *; }
 
--keep public interface com.github.dozzatq.phoenix.tasks.OnCompleteListener { *;}
--keep public interface com.github.dozzatq.phoenix.tasks.OnFailureListener { *;}
--keep public interface com.github.dozzatq.phoenix.tasks.OnSuccessListener { *;}
--keep public interface com.github.dozzatq.phoenix.tasks.OnUnionListener { *;}
--keep public interface com.github.dozzatq.phoenix.tasks.Extension { *;}
--keep public interface com.github.dozzatq.phoenix.notification.PhoenixNotification { *;}
--keep public interface com.github.dozzatq.phoenix.notification.OnActionComplete { *;}
--keep public interface com.github.dozzatq.phoenix.core.NotificationHandler { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnCompleteListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnFailureListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnSuccessListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnUnionListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnTaskSuccessListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnTaskFailureListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.Extension { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.notification.PhoenixNotification { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.notification.OnActionComplete { *;}
+-keepclasseswithmembernames public class com.github.dozzatq.phoenix.core.NotificationHandler { *;}
 
 -keepattributes *Annotation*
 

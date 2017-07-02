@@ -3,7 +3,6 @@ package com.github.dozzatq.phoenix.core;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 
-import com.github.dozzatq.phoenix.Phoenix;
 import com.github.dozzatq.phoenix.notification.PhoenixNotification;
 import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
@@ -12,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 08.12.2016.
+ * Created by Rodion Bartoshyk on 08.12.2016.
  */
 
 public class PhoenixCore {
@@ -38,11 +37,10 @@ public class PhoenixCore {
     private Map<String, CoreQueue> handlerList;
 
     private PhoenixCore() {
-        if (Phoenix.getInstance().getContext() == null)
-            throw new IllegalStateException("Phoenix must be inited !");
         handlerList = new HashMap<>();
     }
 
+    @AnyThread
     public PhoenixCore addNotificationHandler(@NonNull String notificationKey,
                                               @NonNull NotificationHandler handler)
 
@@ -50,6 +48,7 @@ public class PhoenixCore {
         return addNotificationHandler(MainThreadExecutor.getInstance(), notificationKey, handler);
     }
 
+    @AnyThread
     public PhoenixCore addNotificationHandler(@NonNull Executor executor,
                                               @NonNull String notificationKey,
                                               @NonNull NotificationHandler handler)
@@ -69,7 +68,8 @@ public class PhoenixCore {
         }
     }
 
-    public PhoenixCore removeNotificationHandler(String notificationKey, NotificationHandler handler)
+    @AnyThread
+    public PhoenixCore removeNotificationHandler(@NonNull String notificationKey,@NonNull NotificationHandler handler)
     {
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
@@ -84,7 +84,8 @@ public class PhoenixCore {
         }
     }
 
-    public void initiateListener(String notificationKey, PhoenixNotification phoenixNotification)
+    @AnyThread
+    public void initiateListener(@NonNull String notificationKey, @NonNull PhoenixNotification phoenixNotification)
     {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
@@ -95,20 +96,6 @@ public class PhoenixCore {
             if (notificationHandlerList == null)
                 return;
             notificationHandlerList.doHandler(notificationKey, phoenixNotification);
-        }
-    }
-
-    public void initiateSingleListener(String notificationKey, PhoenixNotification phoenixNotification)
-    {
-        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            CoreQueue notificationHandlerList = null;
-            if (handlerList.containsKey(notificationKey))
-                notificationHandlerList = handlerList.get(notificationKey);
-            if (notificationHandlerList == null)
-                return;
-            notificationHandlerList.doHandlerSingle(notificationKey, phoenixNotification);
         }
     }
 }

@@ -1,13 +1,22 @@
 package com.github.dozzatq.phoenix.notification;
 
+import com.github.dozzatq.phoenix.activity.CallbackSupplier;
+import com.github.dozzatq.phoenix.activity.StreetPolice;
+
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 13.06.2017.
+ * Created by Rodion Bartoshyk on 13.06.2017.
  */
 
 class ExceptionThrower {
     static void throwIfNotificationNull(PhoenixNotification notification)
+    {
+        if (notification==null)
+            throw new NullPointerException("Notification Listener must not be null!");
+    }
+
+    static void throwIfSupplierNull(CallbackSupplier notification)
     {
         if (notification==null)
             throw new NullPointerException("Notification Listener must not be null!");
@@ -29,5 +38,11 @@ class ExceptionThrower {
     {
         if (key==null)
             throw new NullPointerException("Queue key must not be null.");
+    }
+
+    static void throwIfStreetPolicyNull(StreetPolice streetPolice)
+    {
+        if (streetPolice==null)
+            throw new IllegalArgumentException("StreetPolice must not be null !");
     }
 }

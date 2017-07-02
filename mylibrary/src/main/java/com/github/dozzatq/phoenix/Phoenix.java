@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.FileUriExposedException;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.AnimRes;
@@ -236,30 +237,6 @@ public class Phoenix {
     }
 
     @AnyThread
-    public PhoenixCenter addListenerForSingleEvent(String notificationKey, PhoenixNotification phoenixNotification)
-    {
-        return getCenter().addListenerForSingleEvent(notificationKey, phoenixNotification);
-    }
-
-    @AnyThread
-    public PhoenixCenter removeSingleEventListener(String notificationKey, PhoenixNotification phoenixNotification)
-    {
-        return getCenter().removeSingleEventListener(notificationKey, phoenixNotification);
-    }
-
-    @AnyThread
-    public PhoenixCenter removeListener(String notificationKey, PhoenixNotification phoenixNotification)
-    {
-        return getCenter().removeListener(notificationKey, phoenixNotification);
-    }
-
-    @AnyThread
-    public PhoenixCenter removeAllSingleEventListeners(String notificationKey)
-    {
-        return getCenter().removeAllSingleEventListeners(notificationKey);
-    }
-
-    @AnyThread
     public PhoenixCenter addAction(@NonNull String actionKey, @NonNull OnActionComplete actionComplete)
     {
         return getCenter().addAction(actionKey, actionComplete);
@@ -294,12 +271,6 @@ public class Phoenix {
     public PhoenixCenter postNotification(final String notificationKey,final Object... values)
     {
         getCenter().postNotification(notificationKey, values);
-        return getCenter();
-    }
-
-    @AnyThread
-    public PhoenixCenter postNotificationSingleEventListeners(final String notificationKey, final Object... values){
-        getCenter().postNotificationSingleEventListeners(notificationKey, values);
         return getCenter();
     }
 

@@ -10,150 +10,199 @@ import java.util.Iterator;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 04.06.2017.
+ * Created by Rodion Bartoshyk on 04.06.2017.
  */
 
 abstract class DefaultCenterQueue {
 
-    protected ArrayDeque<PhoenixNotification> phoenixNotifications;
-    protected volatile boolean keepSynced;
-    protected final Object waitObject = new Object();
+    protected ArrayDeque<NotificationSupplier<PhoenixNotification>> phoenixNotifications;
+    protected final Object mLock = new Object();
     protected Executor queueExecutor;
 
-    public DefaultCenterQueue(Executor queueExecutor) {
+    DefaultCenterQueue(Executor queueExecutor) {
         this.queueExecutor = queueExecutor;
         this.phoenixNotifications = new ArrayDeque<>();
-        keepSynced = true;
     }
 
-    public void addNotification(@NonNull PhoenixNotification notification)
+    void addNotification(@NonNull NotificationSupplier<PhoenixNotification> notification)
     {
-        ExceptionThrower.throwIfNotificationNull(notification);
-        synchronized (waitObject) {
+        ExceptionThrower.throwIfSupplierNull(notification);
+        synchronized (mLock) {
             phoenixNotifications.add(notification);
         }
     }
 
-    public void removeNotification(@NonNull PhoenixNotification notification)
+    int size()
     {
-        ExceptionThrower.throwIfNotificationNull(notification);
-        synchronized (waitObject) {
-            if (phoenixNotifications.contains(notification))
-                phoenixNotifications.remove(notification);
+        synchronized (mLock)
+        {
+            return phoenixNotifications.size();
         }
     }
 
-    public void flushQueue()
+    ArrayDeque<PhoenixNotification> snap()
     {
-        synchronized (waitObject) {
+        synchronized (mLock)
+        {
+            ArrayDeque<PhoenixNotification> snapshot = new ArrayDeque<>();
+
+            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.iterator();
+            while (iterator.hasNext())
+            {
+                NotificationSupplier<PhoenixNotification> notification = iterator.next();
+                ExceptionThrower.throwIfSupplierNull(notification);
+                if (notification.isDestroyed()) {
+                    iterator.remove();
+                    continue;
+                }
+                else if (notification.isStopped())
+                {
+                    continue;
+                }
+                else {
+                    snapshot.push(notification.get());
+                }
+            }
+            return snapshot;
+        }
+    }
+
+    void removeNotification(@NonNull PhoenixNotification notification)
+    {
+        ExceptionThrower.throwIfNotificationNull(notification);
+        synchronized (mLock) {
+            NotificationSupplier<PhoenixNotification> supplier = findPositionNotification(notification);
+            if (supplier!=null)
+                phoenixNotifications.remove(supplier);
+        }
+    }
+
+    private void removeSupplier(@NonNull NotificationSupplier<PhoenixNotification> supplier)
+    {
+        ExceptionThrower.throwIfSupplierNull(supplier);
+        synchronized (mLock) {
+            if (phoenixNotifications.contains(supplier))
+                phoenixNotifications.remove(supplier);
+        }
+    }
+
+    private NotificationSupplier<PhoenixNotification> findPositionNotification(PhoenixNotification notification)
+    {
+        Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
+        NotificationSupplier<PhoenixNotification> supplier = null;
+        while (iterator.hasNext())
+        {
+            NotificationSupplier<PhoenixNotification> testSupplier = iterator.next();
+            if (testSupplier.equals(notification))
+            {
+                supplier = testSupplier;
+                break;
+            }
+        }
+        return supplier;
+    }
+
+    void flushQueue()
+    {
+        synchronized (mLock) {
             phoenixNotifications.clear();
         }
     }
 
-    public final void doCallForCurrent(final PhoenixNotification phoenixNotification, final String notificationKey, final int delayed, final Object...values)
+    final void doCallForCurrent(final PhoenixNotification notification, final String notificationKey, final int delayed, final Object... values)
     {
-        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
-        synchronized (waitObject)
-        {
+        ExceptionThrower.throwIfNotificationNull(notification);
+        synchronized (mLock) {
             ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
-            if (delayed<=0) {
-                    queueExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            phoenixNotification.didReceiveNotification(notificationKey, values);
-                        }
-                    });
-                }
-                else {
-                    MainThreadExecutor.getInstance().executeDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            queueExecutor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    phoenixNotification.didReceiveNotification(notificationKey, values);
-                                }
-                            });
-                        }
-                    }, delayed);
-            }
-                if (!isSynced())
-                    removeNotification(phoenixNotification);
-            }
+            final NotificationSupplier<PhoenixNotification> supplier = findPositionNotification(notification);
+            ExceptionThrower.throwIfSupplierNull(supplier);
+            throwExecution(supplier, notificationKey, delayed, values);
+        }
     }
 
-    public final void doCallToHandler(String notificationKey)
+    private void throwExecution(final NotificationSupplier<PhoenixNotification> supplier, final String notificationKey, final int delayed, final Object... values )
     {
-        synchronized (waitObject)
-        {
-            ExceptionThrower.throwIfExecutorNull(queueExecutor);
-            throwIfQueueNull(phoenixNotifications);
-            Iterator<PhoenixNotification> iterator = phoenixNotifications.descendingIterator();
-            while (iterator.hasNext())
-            {
-                PhoenixNotification notification = iterator.next();
-                ExceptionThrower.throwIfNotificationNull(notification);
-                PhoenixCore.getInstance().initiateListener(notificationKey, notification);
-                if (!isSynced())
-                    iterator.remove();
+        if (supplier.isDestroyed()) {
+            removeSupplier(supplier);
+            return;
+        }
+        if (!supplier.isStopped()) {
+            if (delayed <= 0) {
+                queueExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        supplier.get().didReceiveNotification(notificationKey, values);
+                        tryDeleteAfterSync(supplier);
+                    }
+                });
+            } else {
+                MainThreadExecutor.getInstance().executeDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        queueExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                supplier.get().didReceiveNotification(notificationKey, values);
+                                tryDeleteAfterSync(supplier);
+                            }
+                        });
+                    }
+                }, delayed);
             }
         }
     }
 
-    public final void doCall(final String notificationKey, final int delayed, final Object...values)
+    private boolean tryDeleteAfterSync( NotificationSupplier<PhoenixNotification> supplier)
     {
-        synchronized (waitObject)
+        if (!supplier.isSynced()) {
+            removeSupplier(supplier);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    final void doCallToHandler(String notificationKey)
+    {
+        synchronized (mLock)
         {
             ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
-            Iterator<PhoenixNotification> iterator = phoenixNotifications.descendingIterator();
+            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
             while (iterator.hasNext())
             {
-                final PhoenixNotification notification = iterator.next();
-                ExceptionThrower.throwIfNotificationNull(notification);
-                if (delayed<=0) {
-                    queueExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            notification.didReceiveNotification(notificationKey, values);
-                        }
-                    });
-                }
-                else {
-                    MainThreadExecutor.getInstance().executeDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            queueExecutor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    notification.didReceiveNotification(notificationKey, values);
-                                }
-                            });
-                        }
-                    }, delayed);
-                }
-                if (!isSynced())
+                NotificationSupplier<PhoenixNotification> notification = iterator.next();
+                ExceptionThrower.throwIfSupplierNull(notification);
+                if (notification.isDestroyed()) {
                     iterator.remove();
+                    continue;
+                }
+                PhoenixCore.getInstance().initiateListener(notificationKey, notification.get());
             }
         }
     }
 
-    private void throwIfQueueNull(ArrayDeque<PhoenixNotification> arrayDeque)
+    final void doCall(final String notificationKey, final int delayed, final Object... values)
+    {
+        synchronized (mLock)
+        {
+            ExceptionThrower.throwIfExecutorNull(queueExecutor);
+            throwIfQueueNull(phoenixNotifications);
+            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
+            while (iterator.hasNext())
+            {
+                final NotificationSupplier<PhoenixNotification> supplier = iterator.next();
+                ExceptionThrower.throwIfSupplierNull(supplier);
+                throwExecution(supplier, notificationKey, delayed, values);
+            }
+        }
+    }
+
+    private void throwIfQueueNull(ArrayDeque<NotificationSupplier<PhoenixNotification>> arrayDeque)
     {
         if (arrayDeque==null)
             throw new NullPointerException("Queue is null. Something goes wrong!");
     }
 
-    public final boolean isSynced() {
-        synchronized (waitObject) {
-            return keepSynced;
-        }
-    }
-
-    public final void keepSynced(boolean keepSynced) {
-        synchronized (waitObject) {
-            this.keepSynced = keepSynced;
-        }
-    }
 }

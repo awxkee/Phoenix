@@ -1,34 +1,38 @@
 package com.github.dozzatq.phoenix.notification;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+import com.github.dozzatq.phoenix.activity.ActivityConnectorStrategy;
+import com.github.dozzatq.phoenix.activity.ActivitySupplier;
+import com.github.dozzatq.phoenix.activity.CallbackSupplier;
+import com.github.dozzatq.phoenix.activity.StreetPolice;
 import com.github.dozzatq.phoenix.core.PhoenixCore;
-import com.github.dozzatq.phoenix.Phoenix;
 import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
-import com.github.dozzatq.phoenix.util.PhoenixUtilities;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 06.12.2016.
+ * Created by Rodion Bartoshyk on 06.12.2016.
  */
 
 public class PhoenixCenter {
     private static PhoenixCenter ourInstance = null;
 
     private Map<String, CenterQueue> notificationMap;
-    private Map<String, SingleCenterQueue> singleNotificationMap;
     private ArrayDeque<CenterAction> actionQueue;
 
-    private final Object waitObject = new Object();
+    private final Object mLock = new Object();
 
     public static PhoenixCenter getInstance() {
         PhoenixCenter localInstance = ourInstance;
@@ -45,18 +49,53 @@ public class PhoenixCenter {
 
     @AnyThread
     public PhoenixCenter addAction(@NonNull String actionKey, @NonNull OnActionComplete actionComplete) {
-        return addAction(MainThreadExecutor.getInstance(), actionKey, actionComplete);
+        return addAction(null,MainThreadExecutor.getInstance(), actionKey, actionComplete, new StreetPolice() {
+            @Override
+            public void onDestroy() {
+                destroy();
+            }
+        }, true);
     }
 
     @AnyThread
-    public PhoenixCenter addAction(@NonNull Executor executor, @NonNull String actionKey, @NonNull OnActionComplete actionComplete)
+    public PhoenixCenter addAction(@NonNull String actionKey, @NonNull OnActionComplete actionComplete, boolean synced) {
+        return addAction(null,MainThreadExecutor.getInstance(), actionKey, actionComplete, new StreetPolice() {
+            @Override
+            public void onDestroy() {
+                destroy();
+            }
+        }, synced);
+    }
+
+    @AnyThread
+    public PhoenixCenter addAction(@Nullable Activity activity, @NonNull String actionKey, @NonNull OnActionComplete actionComplete, @NonNull StreetPolice streetPolice,
+                                   boolean synced) {
+        return addAction(activity, MainThreadExecutor.getInstance(), actionKey, actionComplete, streetPolice, synced);
+    }
+
+
+    @AnyThread
+    public PhoenixCenter addAction(@Nullable Activity activity, @NonNull String actionKey, @NonNull OnActionComplete actionComplete, @NonNull StreetPolice streetPolice) {
+        return addAction(activity, MainThreadExecutor.getInstance(), actionKey, actionComplete, streetPolice, true);
+    }
+
+    @AnyThread
+    public PhoenixCenter addAction(@Nullable Activity activity,
+                                   @NonNull Executor executor,
+                                   @NonNull String actionKey,
+                                   @NonNull OnActionComplete actionComplete,
+                                   @NonNull StreetPolice streetPolice,
+                                   boolean synced)
     {
         ExceptionThrower.throwIfExecutorNull(executor);
         ExceptionThrower.throwIfActionNull(actionComplete);
-        synchronized (waitObject) {
+        synchronized (mLock) {
             if (getAction(actionKey) != null)
                 removeAction(actionKey);
-            actionQueue.add(new CenterAction(executor, actionKey, actionComplete));
+            CenterAction centerAction = new CenterAction(executor, actionKey, actionComplete, streetPolice, synced);
+            actionQueue.add(centerAction);
+            if (activity!=null)
+                CallbackActivitySupplier.getInstance(activity).addListener(centerAction.getAction());
             return this;
         }
     }
@@ -64,10 +103,13 @@ public class PhoenixCenter {
     @AnyThread
     public PhoenixCenter callAction(@NonNull String actionKey, @Nullable Object...values)
     {
-        synchronized (waitObject) {
+        synchronized (mLock) {
             CenterAction action = getAction(actionKey);
-            if (action!=null)
+            if (action!=null) {
                 action.doCall(values);
+                if (!action.getAction().isSynced())
+                    removeAction(actionKey);
+            }
             return this;
         }
     }
@@ -76,7 +118,7 @@ public class PhoenixCenter {
     public PhoenixCenter removeAction(@NonNull String actionKey)
     {
         ExceptionThrower.throwIfQueueKeyNull(actionKey);
-        synchronized (waitObject) {
+        synchronized (mLock) {
             Iterator<CenterAction> centerActionIterator = actionQueue.descendingIterator();
             while (centerActionIterator.hasNext()) {
                 CenterAction currentAction = centerActionIterator.next();
@@ -89,10 +131,10 @@ public class PhoenixCenter {
         }
     }
 
-    private CenterAction getAction(String actionKey)
+    private CenterAction getAction(@NonNull String actionKey)
     {
         ExceptionThrower.throwIfQueueKeyNull(actionKey);
-        synchronized (waitObject) {
+        synchronized (mLock) {
             Iterator<CenterAction> centerActionIterator = actionQueue.descendingIterator();
             CenterAction resultAction = null;
             while (centerActionIterator.hasNext()) {
@@ -107,83 +149,66 @@ public class PhoenixCenter {
     }
 
     @AnyThread
-    public void postNotification(final String notificationKey,final Object... values)
+    public ArrayDeque<PhoenixNotification> getSnapshot(@NonNull final String notificationKey)
+    {
+        ArrayDeque<PhoenixNotification> snap = new ArrayDeque<>();
+        if (notificationMap.containsKey(notificationKey)) {
+            if (!notificationMap.isEmpty()) {
+                if (notificationMap.containsKey(notificationKey)) {
+                    DefaultCenterQueue queue = notificationMap.get(notificationKey);
+                    snap = queue.snap();
+                }
+            }
+        }
+        return snap;
+    }
+
+    @AnyThread
+    public int getNotificationsCount(@NonNull final String notificationKey)
+    {
+        if (!notificationMap.containsKey(notificationKey))
+            return 0;
+        if (!notificationMap.isEmpty()) {
+            if (notificationMap.containsKey(notificationKey)) {
+                DefaultCenterQueue queue = notificationMap.get(notificationKey);
+                return queue.size();
+            }
+        }
+        return 0;
+    }
+
+    @AnyThread
+    public void postNotification(@NonNull final String notificationKey,@Nullable final Object... values)
     {
         postNotificationDelayed(notificationKey, 0, values);
     }
 
     @AnyThread
-    public void postNotificationForEventListener(final String notificationKey, final PhoenixNotification phoenixNotification, final Object... values)
-    {
-        postNotificationForEventListenerDelayed(notificationKey, phoenixNotification, 0, values);
-    }
-
-    @AnyThread
-    public void postNotificationForEventListenerDelayed(final String notificationKey, final PhoenixNotification phoenixNotification, int delayed, final Object... values)
+    public void postNotificationForEventListenerDelayed(@NonNull final String notificationKey,
+                                                        @NonNull final PhoenixNotification phoenixNotification,
+                                                        int delayed,
+                                                        @Nullable final Object... values)
     {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            PhoenixUtilities.runOnUIThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        phoenixNotification.didReceiveNotification(notificationKey, values);
-                    } catch (Exception e) {
-                        Log.d("PhoenixCenter", "Bad Listener");
-                    }
-                }
-            }, delayed);
-        }
-    }
-
-    @AnyThread
-    public void postNotificationForSingleEventListener(final String notificationKey, final PhoenixNotification phoenixNotification, final Object... values)
-    {
-        postNotificationForSingleEventListenerDelayed(notificationKey, phoenixNotification, 0, values);
-    }
-
-    @AnyThread
-    public void postNotificationForSingleEventListenerDelayed(final String notificationKey, final PhoenixNotification phoenixNotification, int delayed, final Object... values)
-    {
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
-        synchronized (waitObject) {
+        synchronized (mLock) {
+            if (!notificationMap.containsKey(notificationKey))
+                return;
             if (!notificationMap.isEmpty()) {
                 if (notificationMap.containsKey(notificationKey)) {
-                    DefaultCenterQueue singleList = singleNotificationMap.get(notificationKey);
-                    singleList.doCallForCurrent(phoenixNotification, notificationKey, delayed, values);
+                    DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
+                    phoenixNotifications.doCallForCurrent(phoenixNotification,notificationKey, delayed, values);
                 }
             }
         }
     }
 
     @AnyThread
-    public void postNotificationSingleEventListeners(final String notificationKey, final Object... values)
-    {
-        postNotificationSingleEventListenersDelayed(notificationKey,0,values);
-    }
-
-    @AnyThread
-    public void postNotificationSingleEventListenersDelayed(final String notificationKey, int delay, final Object... values)
+    public void postNotificationDelayed(@NonNull final String notificationKey, @NonNull int delay, @NonNull final Object... values)
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            if (!singleNotificationMap.isEmpty()) {
-                if (singleNotificationMap.containsKey(notificationKey)) {
-                    DefaultCenterQueue phoenixNotifications = singleNotificationMap.get(notificationKey);
-                    phoenixNotifications.doCall(notificationKey, delay, values);
-                }
-            }
-        }
-    }
-
-    @AnyThread
-    public void postNotificationDelayed(final String notificationKey, int delay, final Object... values)
-    {
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
+        synchronized (mLock) {
+            if (!notificationMap.containsKey(notificationKey))
                 return;
             if (!notificationMap.isEmpty()) {
                 if (notificationMap.containsKey(notificationKey)) {
@@ -191,15 +216,14 @@ public class PhoenixCenter {
                     phoenixNotifications.doCall(notificationKey, delay, values);
                 }
             }
-            postNotificationSingleEventListenersDelayed(notificationKey, delay, values);
         }
     }
 
     @AnyThread
-    public PhoenixCenter removeAllListeners(String notificationKey)
+    public PhoenixCenter removeAllListeners(@NonNull String notificationKey)
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
+        synchronized (mLock) {
 
             if (notificationMap.isEmpty())
                 return this;
@@ -216,60 +240,26 @@ public class PhoenixCenter {
     }
 
     @AnyThread
-    public void executeHandler(String notificationKey)
+    public void executeHandler(@NonNull String notificationKey)
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
+        synchronized (mLock) {
 
-            if (!notificationMap.containsKey(notificationKey) && !singleNotificationMap.containsKey(notificationKey))
+            if (!notificationMap.containsKey(notificationKey))
                 return;
             if (notificationMap.containsKey(notificationKey)) {
                 DefaultCenterQueue notifications = notificationMap.get(notificationKey);
                 notifications.doCallToHandler(notificationKey);
             }
-            if (singleNotificationMap.containsKey(notificationKey)) {
-                DefaultCenterQueue notifications = singleNotificationMap.get(notificationKey);
-                notifications.doCallToHandler(notificationKey);
-            }
         }
     }
 
     @AnyThread
-    public void clearCenterForKey(String notificationKey)
-    {
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-
-        removeAllListeners(notificationKey);
-        removeAllSingleEventListeners(notificationKey);
-    }
-
-    @AnyThread
-    public PhoenixCenter removeAllSingleEventListeners(String notificationKey)
-    {
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-
-            if (singleNotificationMap.isEmpty())
-                return this;
-
-            if (!singleNotificationMap.containsKey(notificationKey)) {
-                return this;
-            } else {
-                DefaultCenterQueue observerList = singleNotificationMap.get(notificationKey);
-                observerList.flushQueue();
-            }
-
-            return this;
-        }
-    }
-
-
-    @AnyThread
-    public PhoenixCenter removeListener(String notificationKey, PhoenixNotification phoenixNotification)
+    public PhoenixCenter removeListener(@NonNull String notificationKey,@NonNull PhoenixNotification phoenixNotification)
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
-        synchronized (waitObject) {
+        synchronized (mLock) {
 
             if (notificationMap.isEmpty())
                 return this;
@@ -278,26 +268,6 @@ public class PhoenixCenter {
                 return this;
             } else {
                 DefaultCenterQueue observerList = notificationMap.get(notificationKey);
-                observerList.removeNotification(phoenixNotification);
-            }
-
-            return this;
-        }
-    }
-
-    @AnyThread
-    public PhoenixCenter removeSingleEventListener(String notificationKey, PhoenixNotification phoenixNotification)
-    {
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
-        synchronized (waitObject) {
-            if (singleNotificationMap.isEmpty())
-                return this;
-
-            if (!singleNotificationMap.containsKey(notificationKey)) {
-                return this;
-            } else {
-                DefaultCenterQueue observerList = singleNotificationMap.get(notificationKey);
                 observerList.removeNotification(phoenixNotification);
             }
 
@@ -309,17 +279,45 @@ public class PhoenixCenter {
     public PhoenixCenter addListener(@NonNull String notificationKey,
                                      @NonNull PhoenixNotification phoenixNotification)
     {
-        return addListener(MainThreadExecutor.getInstance(), notificationKey, phoenixNotification);
+        return addListener(notificationKey, phoenixNotification, true);
     }
+
+    @AnyThread
+    public PhoenixCenter addListener(@NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification, boolean synced)
+    {
+        return addListener(null, MainThreadExecutor.getInstance(), notificationKey, phoenixNotification, new StreetPolice() {
+            @Override
+            public void onDestroy() {
+            }
+        }, synced);
+    }
+
+
+    @AnyThread
+    public PhoenixCenter addListener(@Nullable Activity activity, @NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification)
+    {
+        return addListener(activity, MainThreadExecutor.getInstance(), notificationKey, phoenixNotification);
+    }
+
 
     @AnyThread
     public PhoenixCenter addListener(@NonNull Executor executor, @NonNull String notificationKey,
                                      @NonNull PhoenixNotification phoenixNotification)
     {
+        return addListener(null, executor, notificationKey, phoenixNotification);
+    }
+
+    @AnyThread
+    public PhoenixCenter addListener(@Nullable Activity activity, @NonNull Executor executor, @NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification, @NonNull StreetPolice streetPolice,
+                                     boolean syncedListener){
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfExecutorNull(executor);
-        synchronized (waitObject) {
+        ExceptionThrower.throwIfStreetPolicyNull(streetPolice);
+        synchronized (mLock) {
 
             CenterQueue observerList;
             if (notificationMap.containsKey(notificationKey)) {
@@ -328,48 +326,101 @@ public class PhoenixCenter {
                 observerList = new CenterQueue(executor);
                 notificationMap.put(notificationKey, (CenterQueue) observerList);
             }
-            observerList.addNotification(phoenixNotification);
+            NotificationSupplier<PhoenixNotification> callbackSupplier = new NotificationSupplier<>(phoenixNotification, streetPolice, syncedListener);
+            observerList.addNotification(callbackSupplier);
+            if (activity!=null)
+                CallbackActivitySupplier.getInstance(activity).addListener(callbackSupplier);
             PhoenixCore.getInstance().initiateListener(notificationKey, phoenixNotification);
             return this;
         }
     }
 
     @AnyThread
-    public PhoenixCenter addListenerForSingleEvent(@NonNull String notificationKey,
-                                                   @NonNull PhoenixNotification phoenixNotification) {
-        return addListenerForSingleEvent(MainThreadExecutor.getInstance(), notificationKey, phoenixNotification);
+    public PhoenixCenter addListener(@Nullable Activity activity, @NonNull Executor executor, @NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification)
+    {
+        return addListener(activity, executor, notificationKey, phoenixNotification, new StreetPolice() {
+            @Override
+            public void onDestroy() {
+                destroy();
+            }
+        }, true);
     }
 
     @AnyThread
-    public PhoenixCenter addListenerForSingleEvent(@NonNull Executor executor,
-                                                   @NonNull String notificationKey,
-                                                   @NonNull PhoenixNotification phoenixNotification)
+    public PhoenixCenter addListener(@Nullable Activity activity, @NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification, @NonNull StreetPolice streetPolice)
     {
-        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        ExceptionThrower.throwIfNotificationNull(phoenixNotification);
-        ExceptionThrower.throwIfExecutorNull(executor);
-        synchronized (waitObject) {
-            SingleCenterQueue observerList;
-            if (singleNotificationMap.containsKey(notificationKey)) {
-                observerList = singleNotificationMap.get(notificationKey);
-            } else {
-                observerList = new SingleCenterQueue(executor);
-                singleNotificationMap.put(notificationKey, observerList);
-            }
-            observerList.addNotification(phoenixNotification);
-            PhoenixCore.getInstance().initiateSingleListener(notificationKey, phoenixNotification);
-
-            return this;
-        }
+        return addListener(activity, MainThreadExecutor.getInstance(), notificationKey, phoenixNotification, streetPolice, true);
     }
 
     private PhoenixCenter()
     {
-        Context appContext = Phoenix.getInstance().getContext();
-        if (appContext==null)
-            throw new IllegalStateException("Phoenix must be inited !");
         notificationMap = new HashMap<String, CenterQueue>();
         actionQueue = new ArrayDeque<>();
-        singleNotificationMap = new HashMap<String, SingleCenterQueue>();
+    }
+
+    static class CallbackActivitySupplier extends ActivitySupplier {
+        private final List<WeakReference<CallbackSupplier>> mListeners = new ArrayList<>();
+
+        private static CallbackActivitySupplier getInstance(Activity activity)
+        {
+            CallbackActivitySupplier callbackActivitySupplier;
+            ActivityConnectorStrategy activityConnectorStrategy;
+            if ((callbackActivitySupplier = (activityConnectorStrategy = ActivityConnectorStrategy.connect(activity))
+                    .tryGetSupplier("NotificationActivityCallback", CallbackActivitySupplier.class))==null){
+                callbackActivitySupplier = new CallbackActivitySupplier(activityConnectorStrategy);
+            }
+
+            return callbackActivitySupplier;
+        }
+
+        private CallbackActivitySupplier(ActivityConnectorStrategy activityConnectorStrategy)
+        {
+            super(activityConnectorStrategy);
+            activityConnectorStrategy.addListenerInterface("NotificationActivityCallback", this);
+        }
+
+        void addListener(CallbackSupplier callbackSupplier)
+        {
+            synchronized (mListeners)
+            {
+                mListeners.add(new WeakReference<CallbackSupplier>(callbackSupplier));
+            }
+        }
+
+        @Override
+        public void onDestroy() {
+            synchronized (mListeners) {
+                for (WeakReference<CallbackSupplier> mListener : mListeners) {
+                    CallbackSupplier supplier = mListener.get();
+                    if (supplier != null)
+                        supplier.getStreetPolice().onDestroy();
+                }
+                mListeners.clear();
+            }
+        }
+
+        @Override
+        public void onStart() {
+            synchronized (mListeners) {
+                for (WeakReference<CallbackSupplier> mListener : mListeners) {
+                    CallbackSupplier supplier = mListener.get();
+                    if (supplier != null)
+                        supplier.getStreetPolice().onStart();
+                }
+            }
+        }
+
+        @Override
+        public void onStop() {
+            synchronized (mListeners) {
+                for (WeakReference<CallbackSupplier> mListener : mListeners) {
+                    CallbackSupplier supplier = mListener.get();
+                    if (supplier != null)
+                        supplier.getStreetPolice().onStop();
+                }
+            }
+        }
     }
 }
