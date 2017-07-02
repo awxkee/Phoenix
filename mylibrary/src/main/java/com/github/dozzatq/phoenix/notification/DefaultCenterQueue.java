@@ -36,7 +36,26 @@ abstract class DefaultCenterQueue {
     {
         synchronized (mLock)
         {
-            return phoenixNotifications.size();
+            ArrayDeque<PhoenixNotification> snapshot = new ArrayDeque<>();
+
+            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.iterator();
+            while (iterator.hasNext())
+            {
+                NotificationSupplier<PhoenixNotification> notification = iterator.next();
+                ExceptionThrower.throwIfSupplierNull(notification);
+                if (notification.isDestroyed()) {
+                    iterator.remove();
+                    continue;
+                }
+                else if (notification.isStopped())
+                {
+                    continue;
+                }
+                else {
+                    snapshot.push(notification.get());
+                }
+            }
+            return snapshot.size();
         }
     }
 

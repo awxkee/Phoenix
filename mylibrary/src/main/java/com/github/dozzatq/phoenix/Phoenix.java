@@ -1,5 +1,6 @@
 package com.github.dozzatq.phoenix;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,6 +35,7 @@ import android.view.animation.AnimationUtils;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.github.dozzatq.phoenix.activity.StreetPolice;
 import com.github.dozzatq.phoenix.core.PhoenixCore;
 import com.github.dozzatq.phoenix.fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.notification.OnActionComplete;
@@ -243,6 +245,25 @@ public class Phoenix {
     }
 
     @AnyThread
+    public PhoenixCenter addAction(@NonNull Activity activity, @NonNull String actionKey,
+                                   @NonNull OnActionComplete actionComplete)
+    {
+        return addAction(activity, actionKey, actionComplete, new StreetPolice() {
+            @Override
+            public void onDestroy() {
+                destroy();
+            }
+        });
+    }
+
+    @AnyThread
+    public PhoenixCenter addAction(@NonNull Activity activity, @NonNull String actionKey,
+                                   @NonNull OnActionComplete actionComplete, @NonNull StreetPolice streetPolice)
+    {
+        return getCenter().addAction(activity, actionKey, actionComplete,streetPolice);
+    }
+
+    @AnyThread
     public PhoenixCenter callAction(@NonNull String actionKey, @Nullable Object...values)
     {
         return getCenter().callAction(actionKey, values);
@@ -255,9 +276,27 @@ public class Phoenix {
     }
 
     @AnyThread
-    public PhoenixCenter removeAllListeners(String notificationKey)
+    public PhoenixCenter removeAllListeners(@NonNull String notificationKey)
     {
         return getCenter().removeAllListeners(notificationKey);
+    }
+
+    @AnyThread
+    public PhoenixCenter removeListener(@NonNull String notificationKey, @NonNull PhoenixNotification phoenixNotification)
+    {
+        return getCenter().removeListener(notificationKey, phoenixNotification);
+    }
+
+    @AnyThread
+    public PhoenixCenter addListener(@Nullable Activity activity, @NonNull String notificationKey, @NonNull PhoenixNotification phoenixNotification) {
+        return getCenter().addListener(activity, notificationKey, phoenixNotification);
+    }
+
+    @AnyThread
+    public PhoenixCenter addListener(@Nullable Activity activity, @NonNull String notificationKey,
+                                     @NonNull PhoenixNotification phoenixNotification,
+                                     @NonNull StreetPolice streetPolice) {
+        return getCenter().addListener(activity, notificationKey, phoenixNotification, streetPolice);
     }
 
     @AnyThread
