@@ -1,7 +1,6 @@
 package com.github.dozzatq.phoenix.notification;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,7 +9,6 @@ import com.github.dozzatq.phoenix.activity.ActivityConnectorStrategy;
 import com.github.dozzatq.phoenix.activity.ActivitySupplier;
 import com.github.dozzatq.phoenix.activity.CallbackSupplier;
 import com.github.dozzatq.phoenix.activity.StreetPolice;
-import com.github.dozzatq.phoenix.core.PhoenixCore;
 import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
 import java.lang.ref.WeakReference;
@@ -184,7 +182,7 @@ public class PhoenixCenter {
     }
 
     @AnyThread
-    public void postNotificationForEventListenerDelayed(@NonNull final String notificationKey,
+    void postNotificationForEventListenerDelayed(@NonNull final String notificationKey,
                                                         @NonNull final PhoenixNotification phoenixNotification,
                                                         int delayed,
                                                         @Nullable final Object... values)
@@ -204,7 +202,24 @@ public class PhoenixCenter {
     }
 
     @AnyThread
-    public void postNotificationDelayed(@NonNull final String notificationKey, @NonNull int delay, @NonNull final Object... values)
+    void postPrivateNotificationDelayed(@NonNull final String notificationKey,
+                                        int delay, @NonNull final Object... values)
+    {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        synchronized (mLock) {
+            if (!notificationMap.containsKey(notificationKey))
+                return;
+            if (!notificationMap.isEmpty()) {
+                if (notificationMap.containsKey(notificationKey)) {
+                    DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
+                    phoenixNotifications.doNativeCall(notificationKey, delay, values);
+                }
+            }
+        }
+    }
+
+    @AnyThread
+    public void postNotificationDelayed(@NonNull final String notificationKey, int delay, @NonNull final Object... values)
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
@@ -330,7 +345,7 @@ public class PhoenixCenter {
             observerList.addNotification(callbackSupplier);
             if (activity!=null)
                 CallbackActivitySupplier.getInstance(activity).addListener(callbackSupplier);
-            PhoenixCore.getInstance().initiateListener(notificationKey, phoenixNotification);
+            HandlerCore.getInstance().initiateListener(notificationKey, phoenixNotification);
             return this;
         }
     }

@@ -1,9 +1,8 @@
-package com.github.dozzatq.phoenix.core;
+package com.github.dozzatq.phoenix.notification;
 
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 
-import com.github.dozzatq.phoenix.notification.PhoenixNotification;
 import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
 import java.util.HashMap;
@@ -14,34 +13,34 @@ import java.util.concurrent.Executor;
  * Created by Rodion Bartoshyk on 08.12.2016.
  */
 
-public class PhoenixCore {
+public class HandlerCore {
 
-    private static PhoenixCore ourInstance = null;
+    private static HandlerCore ourInstance = null;
 
-    private final Object waitObject = new Object();
+    private final Object mLock = new Object();
 
     @AnyThread
-    public static PhoenixCore getInstance() {
-        PhoenixCore localInstance = ourInstance;
+    public static HandlerCore getInstance() {
+        HandlerCore localInstance = ourInstance;
         if (localInstance == null) {
-            synchronized (PhoenixCore.class) {
+            synchronized (HandlerCore.class) {
                 localInstance = ourInstance;
                 if (localInstance == null) {
-                    ourInstance = localInstance = new PhoenixCore();
+                    ourInstance = localInstance = new HandlerCore();
                 }
             }
         }
         return localInstance;
     }
 
-    private Map<String, CoreQueue> handlerList;
+    private Map<String, HanlderQueue> handlerList;
 
-    private PhoenixCore() {
+    private HandlerCore() {
         handlerList = new HashMap<>();
     }
 
     @AnyThread
-    public PhoenixCore addNotificationHandler(@NonNull String notificationKey,
+    public HandlerCore addNotificationHandler(@NonNull String notificationKey,
                                               @NonNull NotificationHandler handler)
 
     {
@@ -49,19 +48,19 @@ public class PhoenixCore {
     }
 
     @AnyThread
-    public PhoenixCore addNotificationHandler(@NonNull Executor executor,
+    public HandlerCore addNotificationHandler(@NonNull Executor executor,
                                               @NonNull String notificationKey,
                                               @NonNull NotificationHandler handler)
     {
         ExceptionThrower.throwIfExecutorNull(executor);
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            CoreQueue notificationHandlerList = null;
+        synchronized (mLock) {
+            HanlderQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
             else
-                notificationHandlerList = new CoreQueue(executor);
+                notificationHandlerList = new HanlderQueue(executor);
             notificationHandlerList.addHandler(handler);
             handlerList.put(notificationKey, notificationHandlerList);
             return this;
@@ -69,12 +68,22 @@ public class PhoenixCore {
     }
 
     @AnyThread
-    public PhoenixCore removeNotificationHandler(@NonNull String notificationKey,@NonNull NotificationHandler handler)
+    public boolean hasHandler(@NonNull String notificationKey)
+    {
+        ExceptionThrower.throwIfQueueKeyNull(notificationKey);
+        synchronized (mLock)
+        {
+            return handlerList.containsKey(notificationKey) && handlerList.get(notificationKey)!=null;
+        }
+    }
+
+    @AnyThread
+    public HandlerCore removeNotificationHandler(@NonNull String notificationKey, @NonNull NotificationHandler handler)
     {
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            CoreQueue notificationHandlerList = null;
+        synchronized (mLock) {
+            HanlderQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
             if (notificationHandlerList == null)
@@ -89,8 +98,8 @@ public class PhoenixCore {
     {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject) {
-            CoreQueue notificationHandlerList = null;
+        synchronized (mLock) {
+            HanlderQueue notificationHandlerList = null;
             if (handlerList.containsKey(notificationKey))
                 notificationHandlerList = handlerList.get(notificationKey);
             if (notificationHandlerList == null)

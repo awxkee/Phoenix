@@ -22,6 +22,12 @@ class ExceptionThrower {
             throw new NullPointerException("Notification Listener must not be null!");
     }
 
+    static void throwIfHandlerNull(NotificationHandler handler)
+    {
+        if (handler==null)
+            throw new NullPointerException("Handler must not be null.");
+    }
+
     static void throwIfExecutorNull(Executor executor)
     {
         if (executor==null)

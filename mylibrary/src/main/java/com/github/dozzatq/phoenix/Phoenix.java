@@ -11,7 +11,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.FileUriExposedException;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.AnimRes;
@@ -36,7 +35,7 @@ import android.view.animation.AnimationUtils;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.github.dozzatq.phoenix.activity.StreetPolice;
-import com.github.dozzatq.phoenix.core.PhoenixCore;
+import com.github.dozzatq.phoenix.notification.HandlerCore;
 import com.github.dozzatq.phoenix.fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.notification.OnActionComplete;
 import com.github.dozzatq.phoenix.notification.PhoenixCenter;
@@ -93,8 +92,8 @@ public class Phoenix {
         return PhoenixCenter.getInstance();
     }
 
-    public PhoenixCore getCore() {
-        return PhoenixCore.getInstance();
+    public HandlerCore getCore() {
+        return HandlerCore.getInstance();
     }
 
     public void init(Context applicationContext)

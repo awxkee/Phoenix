@@ -1,4 +1,4 @@
-package com.github.dozzatq.phoenix.core;
+package com.github.dozzatq.phoenix.notification;
 
 import android.support.annotation.NonNull;
 
@@ -22,6 +22,16 @@ public abstract class NotificationHandler {
     public final void whisper(@NonNull String key, @NonNull PhoenixNotification phoenixNotification, int delay, Object... values)
     {
         PhoenixCenter.getInstance().postNotificationForEventListenerDelayed(key, phoenixNotification, delay, values);
+    }
+
+    public final void shout(@NonNull String key, Object... values)
+    {
+        PhoenixCenter.getInstance().postPrivateNotificationDelayed(key, 0, values);
+    }
+
+    public final void shout(@NonNull String key, int delay, Object... values)
+    {
+        PhoenixCenter.getInstance().postPrivateNotificationDelayed(key, delay, values);
     }
 
     public final int look(@NonNull String key)

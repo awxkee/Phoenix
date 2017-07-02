@@ -2,7 +2,6 @@ package com.github.dozzatq.phoenix.notification;
 
 import android.support.annotation.NonNull;
 
-import com.github.dozzatq.phoenix.core.PhoenixCore;
 import com.github.dozzatq.phoenix.tasks.MainThreadExecutor;
 
 import java.util.ArrayDeque;
@@ -140,7 +139,10 @@ abstract class DefaultCenterQueue {
         }
     }
 
-    private void throwExecution(final NotificationSupplier<PhoenixNotification> supplier, final String notificationKey, final int delayed, final Object... values )
+    private void throwExecution(final NotificationSupplier<PhoenixNotification> supplier,
+                                final String notificationKey,
+                                final int delayed,
+                                final Object... values )
     {
         if (supplier.isDestroyed()) {
             removeSupplier(supplier);
@@ -197,7 +199,23 @@ abstract class DefaultCenterQueue {
                     iterator.remove();
                     continue;
                 }
-                PhoenixCore.getInstance().initiateListener(notificationKey, notification.get());
+                HandlerCore.getInstance().initiateListener(notificationKey, notification.get());
+            }
+        }
+    }
+
+    final void doNativeCall(final String notificationKey, final int delayed, final Object... values)
+    {
+        synchronized (mLock)
+        {
+            ExceptionThrower.throwIfExecutorNull(queueExecutor);
+            throwIfQueueNull(phoenixNotifications);
+            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
+            while (iterator.hasNext())
+            {
+                final NotificationSupplier<PhoenixNotification> supplier = iterator.next();
+                ExceptionThrower.throwIfSupplierNull(supplier);
+                throwExecution(supplier, notificationKey, delayed, values);
             }
         }
     }
@@ -208,6 +226,10 @@ abstract class DefaultCenterQueue {
         {
             ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
+            if (HandlerCore.getInstance().hasHandler(notificationKey)) {
+                doCallToHandler(notificationKey);
+                return;
+            }
             Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
             while (iterator.hasNext())
             {

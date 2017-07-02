@@ -1,9 +1,7 @@
-package com.github.dozzatq.phoenix.core;
+package com.github.dozzatq.phoenix.notification;
 
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
-
-import com.github.dozzatq.phoenix.notification.PhoenixNotification;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -13,12 +11,12 @@ import java.util.concurrent.Executor;
  * Created by Rodion Bartoshyk on 04.06.2017.
  */
 
-class CoreQueue {
+class HanlderQueue {
     private ArrayDeque<NotificationHandler> handlerList;
     private Executor queueExecutor;
     private final Object waitObject = new Object();
 
-    CoreQueue(Executor queueExecutor) {
+    HanlderQueue(Executor queueExecutor) {
         this.queueExecutor = queueExecutor;
         this.handlerList = new ArrayDeque<>();
     }

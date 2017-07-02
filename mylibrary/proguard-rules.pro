@@ -27,38 +27,38 @@
 -keepclasseswithmembers class com.github.dozzatq.phoenix.auth.** { *; }
 -keepclasseswithmembers class com.github.dozzatq.phoenix.cloudmessaging.FirebaseData { *; }
 
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.OnCompleteListener { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.OnFailureListener { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.OnSuccessListener { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.OnUnionListener { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.OnTaskSuccessListener { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.OnTaskFailureListener { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.tasks.Extension { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.notification.PhoenixNotification { *;}
--keepclasseswithmembernames,allowobfuscation public interface com.github.dozzatq.phoenix.notification.OnActionComplete { *;}
--keepclasseswithmembernames,allowobfuscation  public class com.github.dozzatq.phoenix.core.NotificationHandler { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnCompleteListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnFailureListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnSuccessListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnUnionListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnTaskSuccessListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.OnTaskFailureListener { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.Extension { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.notification.PhoenixNotification { *;}
+-keepclasseswithmembernames public interface com.github.dozzatq.phoenix.notification.OnActionComplete { *;}
+-keepclasseswithmembernames  public class com.github.dozzatq.phoenix.notification.NotificationHandler { *;}
 
 -keepattributes *Annotation*
 
--keep,allowobfuscation public class * {
+-keep public class * {
     public protected *;
 }
 
--keepclassmembernames,allowobfuscation class * {
+-keepclassmembernames class * {
     java.lang.Class class$(java.lang.String);
     java.lang.Class class$(java.lang.String, boolean);
 }
 
--keepclasseswithmembernames,allowobfuscation class * {
+-keepclasseswithmembernames class * {
     native <methods>;
 }
 
--keepclassmembers,allowobfuscation class * extends java.lang.Enum {
+-keepclassmembers class * extends java.lang.Enum {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
--keepclassmembers,allowobfuscation class * implements java.io.Serializable {
+-keepclassmembers class * implements java.io.Serializable {
     static final long serialVersionUID;
     static final java.io.ObjectStreamField[] serialPersistentFields;
     private void writeObject(java.io.ObjectOutputStream);
