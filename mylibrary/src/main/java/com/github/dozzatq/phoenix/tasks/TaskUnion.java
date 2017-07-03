@@ -23,7 +23,7 @@ public class TaskUnion extends TaskAlliance{
     @Override
     protected void checkTasks()
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             if (exceptedTask.size() + successTask.size() == taskCount)
             {

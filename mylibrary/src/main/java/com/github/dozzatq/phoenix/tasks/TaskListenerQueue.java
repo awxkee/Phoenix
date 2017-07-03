@@ -69,7 +69,7 @@ class TaskListenerQueue<PResult> {
             while (iterator.hasNext())
             {
                 TaskQueueService<PResult> pResultTaskQueueService = iterator.next();
-                if (pResultTaskQueueService ==null)
+                if (pResultTaskQueueService == null)
                     throw  new NullPointerException("TaskQueueService must not be null");
                 pResultTaskQueueService.done(pResultTask);
                 if (!isSynced())

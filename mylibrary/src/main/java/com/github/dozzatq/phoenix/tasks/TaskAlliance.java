@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Created by dxfb on 30.05.2017.
@@ -13,7 +12,7 @@ import java.util.Iterator;
 public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, OnTaskFailureListener {
 
     int taskCount = 0;
-    final Object waitObject = new Object();
+    final Object mLock = new Object();
 
     public TaskAlliance(Task... tasks)
     {
@@ -51,7 +50,7 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
 
     boolean hasExcepted()
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             return hasException;
         }
@@ -59,7 +58,7 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
 
     protected void checkTasks()
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             if (exceptedTask.size() + successTask.size() == taskCount)
             {
@@ -76,7 +75,7 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
 
     @Override
     public void OnTaskException(@NonNull Task task) {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             if (!exceptedTask.contains(task))
                 exceptedTask.add(task);
@@ -88,7 +87,7 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
 
     @Override
     public void OnTaskSuccess(@NonNull Task task) {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             if (!successTask.contains(task))
                 successTask.add(task);
