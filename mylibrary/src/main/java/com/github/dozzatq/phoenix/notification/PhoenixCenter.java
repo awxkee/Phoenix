@@ -152,7 +152,7 @@ public class PhoenixCenter {
     }
 
     @AnyThread
-    public ArrayDeque<PhoenixNotification> getSnapshot(@NonNull final String notificationKey)
+    ArrayDeque<PhoenixNotification> getSnapshot(@NonNull final String notificationKey)
     {
         ArrayDeque<PhoenixNotification> snap = new ArrayDeque<>();
         if (checkExistsContainer(notificationKey)) {
@@ -163,7 +163,7 @@ public class PhoenixCenter {
     }
 
     @AnyThread
-    public int getNotificationsCount(@NonNull final String notificationKey)
+    int getNotificationsCount(@NonNull final String notificationKey)
     {
         if (checkExistsContainer(notificationKey)) {
             if (notificationMap.containsKey(notificationKey)) {

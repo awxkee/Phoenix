@@ -32,7 +32,7 @@ class CenterAction {
         synchronized (mLock) {
             if (actionKey == null && actionComplete==null)
                 throw new NullPointerException("Action must not be null!");
-            if (!actionComplete.getStreetPolice().isStopped() && actionComplete.getStreetPolice().isDestroyed()) {
+            if (!actionComplete.getStreetPolice().isStopped() && !actionComplete.getStreetPolice().isDestroyed()) {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
