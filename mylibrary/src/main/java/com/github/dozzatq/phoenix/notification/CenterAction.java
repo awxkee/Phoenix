@@ -23,7 +23,7 @@ class CenterAction {
 
     CenterAction(Executor executor, String actionKey, OnActionComplete actionComplete, StreetPolice streetPolice, boolean synced) {
         this.actionKey = actionKey;
-        this.actionComplete = new NotificationSupplier<>(actionComplete, streetPolice, synced);
+        this.actionComplete = new NotificationSupplier<>(actionComplete, streetPolice, synced, executor);
         this.executor = executor;
     }
 

@@ -47,7 +47,7 @@ public class Task<PResult> {
         synchronized (waitObject) {
             isComplete = true;
             taskResult = pResult;
-            notifyCompleteListeners();
+            notifyListeners();
         }
     }
 
@@ -75,7 +75,7 @@ public class Task<PResult> {
         synchronized (waitObject) {
             isExcepted = true;
             exception = exception1;
-            notifyCompleteListeners();
+            notifyListeners();
         }
     }
 
@@ -246,7 +246,7 @@ public class Task<PResult> {
         return taskExtension;
     }
 
-    private void notifyCompleteListeners()
+    private void notifyListeners()
     {
         queueListeners.callQueue(this);
     }

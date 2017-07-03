@@ -145,18 +145,19 @@ public class PhoenixCenter {
             return resultAction;
         }
     }
+    
+    private boolean checkExistsContainer(@NonNull String key)
+    {
+        return !notificationMap.isEmpty() && notificationMap.containsKey(key);
+    }
 
     @AnyThread
     public ArrayDeque<PhoenixNotification> getSnapshot(@NonNull final String notificationKey)
     {
         ArrayDeque<PhoenixNotification> snap = new ArrayDeque<>();
-        if (notificationMap.containsKey(notificationKey)) {
-            if (!notificationMap.isEmpty()) {
-                if (notificationMap.containsKey(notificationKey)) {
-                    DefaultCenterQueue queue = notificationMap.get(notificationKey);
-                    snap = queue.snap();
-                }
-            }
+        if (checkExistsContainer(notificationKey)) {
+                DefaultCenterQueue queue = notificationMap.get(notificationKey);
+                snap = queue.snap();
         }
         return snap;
     }
@@ -164,9 +165,7 @@ public class PhoenixCenter {
     @AnyThread
     public int getNotificationsCount(@NonNull final String notificationKey)
     {
-        if (!notificationMap.containsKey(notificationKey))
-            return 0;
-        if (!notificationMap.isEmpty()) {
+        if (checkExistsContainer(notificationKey)) {
             if (notificationMap.containsKey(notificationKey)) {
                 DefaultCenterQueue queue = notificationMap.get(notificationKey);
                 return queue.size();
@@ -190,13 +189,9 @@ public class PhoenixCenter {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            if (!notificationMap.containsKey(notificationKey))
-                return;
-            if (!notificationMap.isEmpty()) {
-                if (notificationMap.containsKey(notificationKey)) {
-                    DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
-                    phoenixNotifications.doCallForCurrent(phoenixNotification,notificationKey, delayed, values);
-                }
+            if (checkExistsContainer(notificationKey)) {
+                DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
+                phoenixNotifications.doCallForCurrent(phoenixNotification,notificationKey, delayed, values);
             }
         }
     }
@@ -207,13 +202,9 @@ public class PhoenixCenter {
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            if (!notificationMap.containsKey(notificationKey))
-                return;
-            if (!notificationMap.isEmpty()) {
-                if (notificationMap.containsKey(notificationKey)) {
-                    DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
-                    phoenixNotifications.doNativeCall(notificationKey, delay, values);
-                }
+            if (checkExistsContainer(notificationKey)) {
+                DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
+                phoenixNotifications.doNativeCall(notificationKey, delay, values);
             }
         }
     }
@@ -223,13 +214,9 @@ public class PhoenixCenter {
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            if (!notificationMap.containsKey(notificationKey))
-                return;
-            if (!notificationMap.isEmpty()) {
-                if (notificationMap.containsKey(notificationKey)) {
-                    DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
-                    phoenixNotifications.doCall(notificationKey, delay, values);
-                }
+            if (checkExistsContainer(notificationKey)) {
+                DefaultCenterQueue phoenixNotifications = notificationMap.get(notificationKey);
+                phoenixNotifications.doCall(notificationKey, delay, values);
             }
         }
     }
@@ -240,14 +227,9 @@ public class PhoenixCenter {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
 
-            if (notificationMap.isEmpty())
-                return this;
-
-            if (!notificationMap.containsKey(notificationKey)) {
-                return this;
-            } else {
+            if (checkExistsContainer(notificationKey)) {
                 DefaultCenterQueue observerList = notificationMap.get(notificationKey);
-                observerList.flushQueue();
+                observerList.clearQueue();
             }
 
             return this;
@@ -260,9 +242,7 @@ public class PhoenixCenter {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
 
-            if (!notificationMap.containsKey(notificationKey))
-                return;
-            if (notificationMap.containsKey(notificationKey)) {
+            if (checkExistsContainer(notificationKey)) {
                 DefaultCenterQueue notifications = notificationMap.get(notificationKey);
                 notifications.doCallToHandler(notificationKey);
             }
@@ -276,12 +256,7 @@ public class PhoenixCenter {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         synchronized (mLock) {
 
-            if (notificationMap.isEmpty())
-                return this;
-
-            if (!notificationMap.containsKey(notificationKey)) {
-                return this;
-            } else {
+            if (checkExistsContainer(notificationKey)) {
                 DefaultCenterQueue observerList = notificationMap.get(notificationKey);
                 observerList.removeNotification(phoenixNotification);
             }
@@ -316,12 +291,22 @@ public class PhoenixCenter {
         return addListener(activity, MainThreadExecutor.getInstance(), notificationKey, phoenixNotification);
     }
 
-
     @AnyThread
     public PhoenixCenter addListener(@NonNull Executor executor, @NonNull String notificationKey,
                                      @NonNull PhoenixNotification phoenixNotification)
     {
         return addListener(null, executor, notificationKey, phoenixNotification);
+    }
+
+    private CenterQueue getQueueOrCreate(@NonNull String notificationKey)
+    {
+        if (checkExistsContainer(notificationKey))
+            return notificationMap.get(notificationKey);
+        else {
+            CenterQueue observerList = new CenterQueue();
+            notificationMap.put(notificationKey, (CenterQueue) observerList);
+            return observerList;
+        }
     }
 
     @AnyThread
@@ -334,14 +319,11 @@ public class PhoenixCenter {
         ExceptionThrower.throwIfStreetPolicyNull(streetPolice);
         synchronized (mLock) {
 
-            CenterQueue observerList;
-            if (notificationMap.containsKey(notificationKey)) {
-                observerList = notificationMap.get(notificationKey);
-            } else {
-                observerList = new CenterQueue(executor);
-                notificationMap.put(notificationKey, (CenterQueue) observerList);
-            }
-            NotificationSupplier<PhoenixNotification> callbackSupplier = new NotificationSupplier<>(phoenixNotification, streetPolice, syncedListener);
+            CenterQueue observerList = getQueueOrCreate(notificationKey);
+            NotificationSupplier<PhoenixNotification> callbackSupplier = new NotificationSupplier<>(phoenixNotification,
+                    streetPolice,
+                    syncedListener,
+                    executor);
             observerList.addNotification(callbackSupplier);
             if (activity!=null)
                 CallbackActivitySupplier.getInstance(activity).addListener(callbackSupplier);

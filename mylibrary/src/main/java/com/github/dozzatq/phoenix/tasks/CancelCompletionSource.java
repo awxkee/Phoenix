@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 class CancelCompletionSource<PState> implements StateQueueService<PState> {
 
     private Executor executor;
-    private final Object waitObject=new Object();
+    private final Object waitObject = new Object();
     private OnCanceledListener<? super PState> pResultOnSuccessListener;
 
     CancelCompletionSource(Executor executor, OnCanceledListener<? super PState> pResultOnSuccessListener) {

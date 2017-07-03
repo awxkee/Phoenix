@@ -19,14 +19,14 @@ class TaskListenerQueue<PResult> {
         taskCompleteListeners = new ArrayDeque<>();
     }
 
-    public void addService(TaskQueueService<PResult> pResultTaskQueueService)
+    void addService(TaskQueueService<PResult> pResultTaskQueueService)
     {
         synchronized (waitObject) {
             taskCompleteListeners.add(pResultTaskQueueService);
         }
     }
 
-    public void removeFromQueue(Object listenerCriteria)
+    void removeFromQueue(Object listenerCriteria)
     {
         if (listenerCriteria==null)
             return;
@@ -44,7 +44,7 @@ class TaskListenerQueue<PResult> {
         }
     }
 
-    public void callForThis(TaskQueueService<PResult> taskCompleteListener, @NonNull Task<PResult> pResultTask)
+    void callForThis(TaskQueueService<PResult> taskCompleteListener, @NonNull Task<PResult> pResultTask)
     {
         synchronized (waitObject)
         {
@@ -58,7 +58,7 @@ class TaskListenerQueue<PResult> {
         }
     }
 
-    public void callQueue(@NonNull Task<PResult> pResultTask)
+    void callQueue(@NonNull Task<PResult> pResultTask)
     {
         synchronized (waitObject)
         {
@@ -79,13 +79,13 @@ class TaskListenerQueue<PResult> {
         }
     }
 
-    public boolean isSynced() {
+    boolean isSynced() {
         synchronized (waitObject) {
             return keepSynced;
         }
     }
 
-    public void keepSynced(boolean keepSynced) {
+    void keepSynced(boolean keepSynced) {
         synchronized (waitObject) {
             this.keepSynced = keepSynced;
         }

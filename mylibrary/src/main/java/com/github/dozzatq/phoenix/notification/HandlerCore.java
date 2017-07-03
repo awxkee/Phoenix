@@ -57,12 +57,8 @@ public class HandlerCore {
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            HandlerQueue notificationHandlerList = null;
-            if (handlerList.containsKey(notificationKey))
-                notificationHandlerList = handlerList.get(notificationKey);
-            else
-                notificationHandlerList = new HandlerQueue(executor);
-            notificationHandlerList.addHandler(handler);
+            HandlerQueue notificationHandlerList = getQueueOrCreate(notificationKey);
+            notificationHandlerList.addHandler(new HandlerSupplier(handler, executor));
             handlerList.put(notificationKey, notificationHandlerList);
             return this;
         }
@@ -74,7 +70,7 @@ public class HandlerCore {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock)
         {
-            return handlerList.containsKey(notificationKey) && handlerList.get(notificationKey)!=null;
+            return checkExistsQueue(notificationKey);
         }
     }
 
@@ -84,14 +80,28 @@ public class HandlerCore {
         ExceptionThrower.throwIfHandlerNull(handler);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            HandlerQueue notificationHandlerList = null;
-            if (handlerList.containsKey(notificationKey))
-                notificationHandlerList = handlerList.get(notificationKey);
+            HandlerQueue notificationHandlerList = getQueueOrNull(notificationKey);
             if (notificationHandlerList == null)
                 return this;
             notificationHandlerList.removeHandler(handler);
             return this;
         }
+    }
+
+    private HandlerQueue getQueueOrCreate(String notificationKey)
+    {
+        HandlerQueue queue;
+        return (queue = getQueueOrNull(notificationKey)) == null ? new HandlerQueue() : queue;
+    }
+
+    private HandlerQueue getQueueOrNull(String notificationKey)
+    {
+        return !checkExistsQueue(notificationKey) ? null : handlerList.get(notificationKey);
+    }
+
+    private boolean checkExistsQueue(String notificationKey)
+    {
+        return !handlerList.isEmpty() && handlerList.containsKey(notificationKey);
     }
 
     @AnyThread
@@ -101,9 +111,7 @@ public class HandlerCore {
             ExceptionThrower.throwIfNotificationNull(phoenixNotifications);
             ExceptionThrower.throwIfQueueKeyNull(notificationKey);
             synchronized (mLock) {
-                HandlerQueue notificationHandlerList = null;
-                if (handlerList.containsKey(notificationKey))
-                    notificationHandlerList = handlerList.get(notificationKey);
+                HandlerQueue notificationHandlerList = getQueueOrNull(notificationKey);
                 if (notificationHandlerList == null)
                     return;
                 notificationHandlerList.doHandler(notificationKey, phoenixNotifications);
@@ -117,9 +125,7 @@ public class HandlerCore {
         ExceptionThrower.throwIfNotificationNull(phoenixNotification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-            HandlerQueue notificationHandlerList = null;
-            if (handlerList.containsKey(notificationKey))
-                notificationHandlerList = handlerList.get(notificationKey);
+            HandlerQueue notificationHandlerList = getQueueOrNull(notificationKey);
             if (notificationHandlerList == null)
                 return;
             ArrayDeque<PhoenixNotification> phoenixNotifications = new ArrayDeque<PhoenixNotification>();

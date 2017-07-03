@@ -16,10 +16,8 @@ abstract class DefaultCenterQueue {
 
     protected ArrayDeque<NotificationSupplier<PhoenixNotification>> phoenixNotifications;
     protected final Object mLock = new Object();
-    protected Executor queueExecutor;
 
-    DefaultCenterQueue(Executor queueExecutor) {
-        this.queueExecutor = queueExecutor;
+    DefaultCenterQueue() {
         this.phoenixNotifications = new ArrayDeque<>();
     }
 
@@ -58,28 +56,34 @@ abstract class DefaultCenterQueue {
         }
     }
 
+    private PhoenixNotification tryResolveNotification(NotificationSupplier<PhoenixNotification> supplier,
+                                                                     Iterator<NotificationSupplier<PhoenixNotification>> iterator)
+    {
+        if (supplier.isDestroyed()) {
+            iterator.remove();
+            return null;
+        }
+        else if (supplier.isStopped())
+        {
+            return null;
+        }
+        else {
+            return supplier.get();
+        }
+    }
+
     ArrayDeque<PhoenixNotification> snap()
     {
-        synchronized (mLock)
-        {
+        synchronized (mLock) {
             ArrayDeque<PhoenixNotification> snapshot = new ArrayDeque<>();
 
-            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.iterator();
-            while (iterator.hasNext())
-            {
+            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
+            while (iterator.hasNext()) {
                 NotificationSupplier<PhoenixNotification> notification = iterator.next();
                 ExceptionThrower.throwIfSupplierNull(notification);
-                if (notification.isDestroyed()) {
-                    iterator.remove();
-                    continue;
-                }
-                else if (notification.isStopped())
-                {
-                    continue;
-                }
-                else {
-                    snapshot.push(notification.get());
-                }
+                PhoenixNotification curNotification;
+                if ((curNotification = tryResolveNotification(notification, iterator)) != null)
+                    snapshot.push(curNotification);
             }
             return snapshot;
         }
@@ -110,17 +114,13 @@ abstract class DefaultCenterQueue {
         NotificationSupplier<PhoenixNotification> supplier = null;
         while (iterator.hasNext())
         {
-            NotificationSupplier<PhoenixNotification> testSupplier = iterator.next();
-            if (testSupplier.equals(notification))
-            {
-                supplier = testSupplier;
-                break;
-            }
+            if ((supplier = iterator.next()) !=null && supplier.equals(notification))
+                return supplier;
         }
-        return supplier;
+        return null;
     }
 
-    void flushQueue()
+    void clearQueue()
     {
         synchronized (mLock) {
             phoenixNotifications.clear();
@@ -131,7 +131,6 @@ abstract class DefaultCenterQueue {
     {
         ExceptionThrower.throwIfNotificationNull(notification);
         synchronized (mLock) {
-            ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
             final NotificationSupplier<PhoenixNotification> supplier = findPositionNotification(notification);
             ExceptionThrower.throwIfSupplierNull(supplier);
@@ -150,7 +149,7 @@ abstract class DefaultCenterQueue {
         }
         if (!supplier.isStopped()) {
             if (delayed <= 0) {
-                queueExecutor.execute(new Runnable() {
+                supplier.execute(new Runnable() {
                     @Override
                     public void run() {
                         supplier.get().didReceiveNotification(notificationKey, values);
@@ -161,7 +160,7 @@ abstract class DefaultCenterQueue {
                 MainThreadExecutor.getInstance().executeDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        queueExecutor.execute(new Runnable() {
+                        supplier.execute(new Runnable() {
                             @Override
                             public void run() {
                                 supplier.get().didReceiveNotification(notificationKey, values);
@@ -186,25 +185,11 @@ abstract class DefaultCenterQueue {
 
     final void doCallToHandler(String notificationKey)
     {
+        ArrayDeque<PhoenixNotification> notifications = snap();
         synchronized (mLock)
         {
-            ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
-            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
-            ArrayDeque<PhoenixNotification> phoenixNotifications = new ArrayDeque<PhoenixNotification>();
-            while (iterator.hasNext())
-            {
-                NotificationSupplier<PhoenixNotification> notification = iterator.next();
-                ExceptionThrower.throwIfSupplierNull(notification);
-                if (notification.isDestroyed()) {
-                    iterator.remove();
-                    continue;
-                }
-                if (!notification.isStopped())
-                    phoenixNotifications.push(notification.get());
-
-            }
-            HandlerCore.getInstance().beginBatchedUpdate(notificationKey, phoenixNotifications);
+            HandlerCore.getInstance().beginBatchedUpdate(notificationKey, notifications);
         }
     }
 
@@ -212,7 +197,6 @@ abstract class DefaultCenterQueue {
     {
         synchronized (mLock)
         {
-            ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
             Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
             while (iterator.hasNext())
@@ -228,20 +212,13 @@ abstract class DefaultCenterQueue {
     {
         synchronized (mLock)
         {
-            ExceptionThrower.throwIfExecutorNull(queueExecutor);
             throwIfQueueNull(phoenixNotifications);
             if (HandlerCore.getInstance().hasHandler(notificationKey)) {
                 doCallToHandler(notificationKey);
                 return;
             }
-            Iterator<NotificationSupplier<PhoenixNotification>> iterator = phoenixNotifications.descendingIterator();
-            while (iterator.hasNext())
-            {
-                final NotificationSupplier<PhoenixNotification> supplier = iterator.next();
-                ExceptionThrower.throwIfSupplierNull(supplier);
-                throwExecution(supplier, notificationKey, delayed, values);
-            }
         }
+        doNativeCall(notificationKey, delayed, values);
     }
 
     private void throwIfQueueNull(ArrayDeque<NotificationSupplier<PhoenixNotification>> arrayDeque)

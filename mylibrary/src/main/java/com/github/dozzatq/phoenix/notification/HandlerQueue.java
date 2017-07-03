@@ -12,27 +12,25 @@ import java.util.concurrent.Executor;
  */
 
 class HandlerQueue {
-    private ArrayDeque<NotificationHandler> handlerList;
-    private Executor queueExecutor;
+    private ArrayDeque<HandlerSupplier> handlerList;
     private final Object waitObject = new Object();
 
-    HandlerQueue(Executor queueExecutor) {
-        this.queueExecutor = queueExecutor;
+    HandlerQueue() {
         this.handlerList = new ArrayDeque<>();
     }
 
     @AnyThread
-    public void doHandler(@NonNull final String notificationKey, @NonNull final ArrayDeque<PhoenixNotification> notification)
+    void doHandler(@NonNull final String notificationKey, @NonNull final ArrayDeque<PhoenixNotification> notification)
     {
         ExceptionThrower.throwIfNotificationNull(notification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (waitObject)
         {
-            Iterator<NotificationHandler> iterator = handlerList.descendingIterator();
+            Iterator<HandlerSupplier> iterator = handlerList.descendingIterator();
             while (iterator.hasNext())
             {
-                final NotificationHandler handler = iterator.next();
-                queueExecutor.execute(new Runnable() {
+                final HandlerSupplier handler = iterator.next();
+                handler.execute(new Runnable() {
                     @Override
                     public void run() {
                         handler.batchNotification(notificationKey, notification);
@@ -43,9 +41,8 @@ class HandlerQueue {
     }
 
     @AnyThread
-    public void addHandler(@NonNull NotificationHandler notificationHandler)
+    void addHandler(@NonNull HandlerSupplier notificationHandler)
     {
-        ExceptionThrower.throwIfHandlerNull(notificationHandler);
         synchronized (waitObject)
         {
             handlerList.add(notificationHandler);
@@ -53,13 +50,19 @@ class HandlerQueue {
     }
 
     @AnyThread
-    public void removeHandler(@NonNull NotificationHandler notificationHandler)
+    void removeHandler(@NonNull NotificationHandler notificationHandler)
     {
         ExceptionThrower.throwIfHandlerNull(notificationHandler);
         synchronized (waitObject)
         {
-            if (handlerList.contains(notificationHandler))
-                handlerList.remove(notificationHandler);
+            Iterator<HandlerSupplier> handlerSupplierIterator = handlerList.descendingIterator();
+            while (handlerSupplierIterator.hasNext())
+            {
+                if (handlerSupplierIterator.next().equals(notificationHandler)){
+                    handlerSupplierIterator.remove();
+                    break;
+                }
+            }
         }
     }
 

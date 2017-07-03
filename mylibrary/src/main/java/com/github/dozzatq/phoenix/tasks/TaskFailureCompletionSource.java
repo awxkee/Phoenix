@@ -8,13 +8,13 @@ import java.util.concurrent.Executor;
  * Created by dxfb on 23.06.2017.
  */
 
-public class TaskFailureCompletionSource<PResult> implements TaskQueueService<PResult> {
+class TaskFailureCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     private Executor executor;
     private final Object waitObject=new Object();
     private OnTaskFailureListener<PResult> pResultFailureListener;
 
-    public TaskFailureCompletionSource(Executor executor, OnTaskFailureListener<PResult> pResultFailureListener) {
+    TaskFailureCompletionSource(Executor executor, OnTaskFailureListener<PResult> pResultFailureListener) {
         this.executor = executor;
         this.pResultFailureListener = pResultFailureListener;
     }

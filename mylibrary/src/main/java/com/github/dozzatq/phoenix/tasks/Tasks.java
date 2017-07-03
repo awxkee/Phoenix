@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -123,28 +122,28 @@ public class Tasks {
     }
 
     private static class WaiterTask implements MainListenerService {
-        private final CountDownLatch zztj;
+        private final CountDownLatch countDownLatch;
 
         private WaiterTask() {
-            this.zztj = new CountDownLatch(1);
+            this.countDownLatch = new CountDownLatch(1);
         }
 
         public void await() throws InterruptedException {
-            this.zztj.await();
+            this.countDownLatch.await();
         }
 
         public boolean await(long var1, TimeUnit var3) throws InterruptedException, TimeoutException {
-            return this.zztj.await(var1, var3);
+            return this.countDownLatch.await(var1, var3);
         }
 
         @Override
         public void OnFailure(@NonNull Exception e) {
-            this.zztj.countDown();
+            this.countDownLatch.countDown();
         }
 
         @Override
         public void OnSuccess(Object o) {
-            this.zztj.countDown();
+            this.countDownLatch.countDown();
         }
     }
 
