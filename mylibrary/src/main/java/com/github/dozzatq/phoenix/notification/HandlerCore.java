@@ -107,15 +107,15 @@ public class HandlerCore {
     @AnyThread
     void beginBatchedUpdate(@NonNull String notificationKey, ArrayDeque<PhoenixNotification> phoenixNotifications)
     {
+        if (phoenixNotifications.size()==0)
+            return;
         synchronized (mLock) {
             ExceptionThrower.throwIfNotificationNull(phoenixNotifications);
             ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-            synchronized (mLock) {
-                HandlerQueue notificationHandlerList = getQueueOrNull(notificationKey);
-                if (notificationHandlerList == null)
-                    return;
-                notificationHandlerList.doHandler(notificationKey, phoenixNotifications);
-            }
+            HandlerQueue notificationHandlerList = getQueueOrNull(notificationKey);
+            if (notificationHandlerList == null)
+                return;
+            notificationHandlerList.doHandler(notificationKey, phoenixNotifications);
         }
     }
 

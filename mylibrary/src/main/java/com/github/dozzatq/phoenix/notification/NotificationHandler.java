@@ -17,10 +17,12 @@ public abstract class NotificationHandler {
 
     public void batchNotification(@NonNull String key, @NonNull ArrayDeque<PhoenixNotification> phoenixNotifications)
     {
-        PhoenixNotification notification;
-        while ((notification = phoenixNotifications.poll())!=null)
+        Iterator<PhoenixNotification> notificationIterator = phoenixNotifications.descendingIterator();
+        while (notificationIterator.hasNext())
         {
-            didNeedNotification(key, notification);
+            PhoenixNotification notification = notificationIterator.next();
+            if (notification!=null)
+                didNeedNotification(key, notification);
         }
     }
 

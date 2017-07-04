@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
-import java.util.concurrent.Executor;
 
 /**
  * Created by Rodion Bartoshyk on 04.06.2017.
@@ -13,7 +12,7 @@ import java.util.concurrent.Executor;
 
 class HandlerQueue {
     private ArrayDeque<HandlerSupplier> handlerList;
-    private final Object waitObject = new Object();
+    private final Object mLock = new Object();
 
     HandlerQueue() {
         this.handlerList = new ArrayDeque<>();
@@ -24,7 +23,7 @@ class HandlerQueue {
     {
         ExceptionThrower.throwIfNotificationNull(notification);
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             Iterator<HandlerSupplier> iterator = handlerList.descendingIterator();
             while (iterator.hasNext())
@@ -43,7 +42,7 @@ class HandlerQueue {
     @AnyThread
     void addHandler(@NonNull HandlerSupplier notificationHandler)
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             handlerList.add(notificationHandler);
         }
@@ -53,7 +52,7 @@ class HandlerQueue {
     void removeHandler(@NonNull NotificationHandler notificationHandler)
     {
         ExceptionThrower.throwIfHandlerNull(notificationHandler);
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             Iterator<HandlerSupplier> handlerSupplierIterator = handlerList.descendingIterator();
             while (handlerSupplierIterator.hasNext())

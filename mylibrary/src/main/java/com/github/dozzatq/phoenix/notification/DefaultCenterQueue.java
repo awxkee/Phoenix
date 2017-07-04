@@ -81,8 +81,8 @@ abstract class DefaultCenterQueue {
             while (iterator.hasNext()) {
                 NotificationSupplier<PhoenixNotification> notification = iterator.next();
                 ExceptionThrower.throwIfSupplierNull(notification);
-                PhoenixNotification curNotification;
-                if ((curNotification = tryResolveNotification(notification, iterator)) != null)
+                PhoenixNotification curNotification = tryResolveNotification(notification, iterator);
+                if (curNotification != null)
                     snapshot.push(curNotification);
             }
             return snapshot;
@@ -186,6 +186,8 @@ abstract class DefaultCenterQueue {
     final void doCallToHandler(String notificationKey)
     {
         ArrayDeque<PhoenixNotification> notifications = snap();
+        if (notifications.size()==0)
+            return;
         synchronized (mLock)
         {
             throwIfQueueNull(phoenixNotifications);
