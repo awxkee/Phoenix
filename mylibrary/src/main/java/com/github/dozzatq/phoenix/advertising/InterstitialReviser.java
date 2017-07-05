@@ -14,7 +14,7 @@ import java.util.List;
  * Created by dxfb on 04.07.2017.
  */
 
-public class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void>, Snapper<InterstitialBundle> {
+class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void>, Snapper<InterstitialBundle> {
 
     private List<FactoryAd> factoryAdList;
     private InterstitialHelper interstitialHelper;

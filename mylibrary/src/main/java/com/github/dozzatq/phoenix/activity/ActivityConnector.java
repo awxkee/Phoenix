@@ -83,7 +83,6 @@ public class ActivityConnector extends Fragment implements ActivitySupplierInter
             ((ActivitySupplier) (entry1 = (Map.Entry) entry).getValue())
                     .onCreate(bundle != null ? bundle.getBundle((String) entry1.getKey()) : null);
         }
-
     }
 
     @Override
@@ -115,7 +114,6 @@ public class ActivityConnector extends Fragment implements ActivitySupplierInter
         for (ActivitySupplier supplier : this.lifecycleCallbacks.values()) {
             supplier.onActivityResult(var1, var2, var3);
         }
-
     }
 
     @Override
