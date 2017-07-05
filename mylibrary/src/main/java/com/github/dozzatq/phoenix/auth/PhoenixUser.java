@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.auth;
 
 /**
- * Created by dxfb on 21.05.2017.
+ * Created by Rodion Bartoshyk on 21.05.2017.
  */
 
 public class PhoenixUser {

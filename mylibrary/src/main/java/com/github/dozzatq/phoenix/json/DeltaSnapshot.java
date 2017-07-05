@@ -10,31 +10,92 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.lang.reflect.Type;
+import java.util.Iterator;
+
 /**
- * Created by dxfb on 02.06.2017.
+ * Created by Rodion Bartoshyk on 02.06.2017.
  */
 
 public class DeltaSnapshot {
 
     private String key;
     private Object value;
-    private final Object waitObject = new Object();
+    private final Object mLock = new Object();
+
+    private JSONTokener jsonTokener=null;
 
     public DeltaSnapshot(String key, Object value) {
         this.key = key;
         this.value = value;
     }
 
+    public long getChildrenCount()
+    {
+        synchronized (mLock)
+        {
+            if (value instanceof String) {
+                JSONObject jsonObject;
+                try {
+                    jsonObject = new JSONObject((String) value);
+                    return jsonObject.length();
+                } catch (JSONException e) {
+                    try {
+                        JSONArray jsonArray = new JSONArray((String) value);
+                        return jsonArray.length();
+                    } catch (JSONException e5) {
+                    }
+                }
+
+            }
+            return 0;
+        }
+    }
+
+    public Iterator<DeltaSnapshot> getIterator()
+    {
+        synchronized (mLock)
+        {
+            if (value instanceof String) {
+                JSONObject jsonObject;
+                try {
+                    jsonObject = new JSONObject((String) value);
+                    final Iterator<String> keyIterator = jsonObject.keys();
+                    Iterator<DeltaSnapshot> iterator = new Iterator<DeltaSnapshot>() {
+                        @Override
+                        public boolean hasNext() {
+                            return keyIterator.hasNext();
+                        }
+
+                        @Override
+                        public DeltaSnapshot next() {
+                            return child(keyIterator.next());
+                        }
+                    };
+                    return iterator;
+                } catch (JSONException e) {
+                    try {
+                        JSONArray jsonArray = new JSONArray((String) value);
+                        return new JSONArrayIterator(jsonArray, jsonArray.length());
+                    } catch (JSONException e5) {
+                    }
+                }
+
+            }
+            return null;
+        }
+    }
+
     public DeltaSnapshot child(String childKey)
     {
-        synchronized (waitObject) {
+        synchronized (mLock) {
             if (childKey == null)
                 return new DeltaSnapshot(null, null);
 
             if (value instanceof String) {
-                JSONTokener jsonTokener;
-                jsonTokener = new JSONTokener((String) value);
                 try {
+                    if (jsonTokener==null)
+                        jsonTokener = new JSONTokener((String) value);
                     Object objectChild = jsonTokener.nextValue();
                     if (objectChild instanceof JSONArray) {
                         Object object = ((JSONArray) objectChild).get(Integer.parseInt(childKey));
@@ -50,6 +111,19 @@ public class DeltaSnapshot {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+            else if (value instanceof JSONObject)
+            {
+                if (((JSONObject) value).isNull(childKey))
+                    return new DeltaSnapshot(childKey, null);
+
+                Object valueObject = null;
+                try {
+                    valueObject = ((JSONObject) value).get(childKey);
+                } catch (JSONException e) {
+                    return null;
+                }
+                return alphaSnapshot(childKey, valueObject);
             }
             return new DeltaSnapshot(childKey, null);
         }
@@ -94,7 +168,7 @@ public class DeltaSnapshot {
     }
 
     public Object getValue() {
-        synchronized (waitObject) {
+        synchronized (mLock) {
             if (value instanceof Boolean) {
                 return (Boolean) value;
             } else if (value instanceof String) {
@@ -110,6 +184,17 @@ public class DeltaSnapshot {
         }
     }
 
+    public <X> X getValue(Type xClass)
+    {
+        if (value==null)
+            return null;
+        GsonBuilder builder = new GsonBuilder();
+        builder.setDateFormat("MM/dd/yy HH:mm:ss");
+        if (value instanceof String)
+            return builder.create().fromJson((String) value, xClass);
+        return null;
+    }
+
     public <X> X getValue(Class<X> xClass)
     {
         if (value==null)
@@ -122,7 +207,6 @@ public class DeltaSnapshot {
         else
             return tryCastValue(xClass);
     }
-
 
     public String toString() {
         return (new StringBuilder(33 + String.valueOf(getKey()).length() + String.valueOf(getValue()).length())).append("DeltaSnapshot { key = ").append(getKey())

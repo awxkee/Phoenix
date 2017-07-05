@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.tasks;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 31.05.2017.
+ * Created by Rodion Bartoshyk on 31.05.2017.
  */
 
 class UnionTask<PFirst, PNext> extends TaskUnion implements OnSuccessListener<Void>{

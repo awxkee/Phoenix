@@ -32,7 +32,9 @@ class HandlerQueue {
                 handler.execute(new Runnable() {
                     @Override
                     public void run() {
-                        handler.batchNotification(notificationKey, notification);
+                        synchronized (mLock) {
+                            handler.batchNotification(notificationKey, notification);
+                        }
                     }
                 });
             }

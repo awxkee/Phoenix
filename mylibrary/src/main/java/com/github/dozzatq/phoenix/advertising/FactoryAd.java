@@ -1,23 +1,38 @@
 package com.github.dozzatq.phoenix.advertising;
 
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
-
 /**
- * Created by dxfb on 03.05.2017.
+ * Created by Rodion Bartoshyk on 03.05.2017.
  */
 
-public abstract class FactoryAd extends AdCreator {
+public abstract class FactoryAd<NA> extends AdCreator {
+
+    private NA snapNativeAd;
+
     public abstract void showInterstitial(int config, InterstitialHelper interstitialHelper);
     public abstract void loadInterstitial(int config, InterstitialHelper interstitialHelper);
     public abstract void loadNative(int config, NativeHelper nativeHelper);
-    public abstract View returnNativeView();
-    public abstract void bindHolder(RecyclerView.ViewHolder viewHolder);
     public abstract boolean isInterstitialLoaded();
     public abstract String isInstance();
     public abstract boolean isNativeAdLoaded();
+
+    public void setSnap(NA nativeAd)
+    {
+        snapNativeAd = nativeAd;
+    }
+
+    public NA getSnap()
+    {
+        return snapNativeAd;
+    }
+
+    public <VH> LoyalityWrapper<NA,VH> wrap(LoyalityWrapper<NA, VH> wrapper)
+    {
+        wrapper.setNativeAd(snapNativeAd);
+        wrapper.wrap();
+        return wrapper;
+    }
+
     public abstract void setNote(Object object);
     public abstract Object getNote();
-    public abstract void bindView(View view, int i);
     public abstract String placementForConfig(int config);
 }

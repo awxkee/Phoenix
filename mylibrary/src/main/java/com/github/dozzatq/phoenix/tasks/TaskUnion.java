@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.tasks;
 import java.util.Collection;
 
 /**
- * Created by dxfb on 23.06.2017.
+ * Created by Rodion Bartoshyk on 23.06.2017.
  */
 
 public class TaskUnion extends TaskAlliance{

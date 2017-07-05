@@ -22,7 +22,7 @@ public class CallbackSupplier<T> {
         this.callback = object;
         this.streetPolice = streetPolice;
         if (streetPolice==null)
-            this.streetPolice = new StreetPolice() {
+                    this.streetPolice = new StreetPolice() {
                 @Override
                 public void onDestroy() {
                     destroy();
@@ -32,19 +32,27 @@ public class CallbackSupplier<T> {
 
     public final boolean isStopped()
     {
-        return streetPolice.isStopped();
+        synchronized (mLock) {
+            return streetPolice.isStopped();
+        }
     }
     public final boolean isDestroyed()
     {
-        return streetPolice.isDestroyed();
+        synchronized (mLock) {
+            return streetPolice.isDestroyed();
+        }
     }
 
     public T get()
     {
-        return callback;
+        synchronized (mLock) {
+            return callback;
+        }
     }
 
     public StreetPolice getStreetPolice() {
-        return streetPolice;
+        synchronized (mLock) {
+            return streetPolice;
+        }
     }
 }

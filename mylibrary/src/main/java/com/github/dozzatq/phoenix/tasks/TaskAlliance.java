@@ -6,7 +6,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 
 /**
- * Created by dxfb on 30.05.2017.
+ * Created by Rodion Bartoshyk on 30.05.2017.
  */
 
 public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, OnTaskFailureListener {

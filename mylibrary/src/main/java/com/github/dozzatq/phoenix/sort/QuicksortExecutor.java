@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 17.06.2017.
+ * Created by Rodion Bartoshyk on 17.06.2017.
  */
 
 class QuicksortExecutor<T> {

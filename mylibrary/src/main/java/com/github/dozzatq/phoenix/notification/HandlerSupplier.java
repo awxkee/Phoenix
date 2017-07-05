@@ -6,7 +6,7 @@ import java.util.ArrayDeque;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 03.07.2017.
+ * Created by Rodion Bartoshyk on 03.07.2017.
  */
 
 class HandlerSupplier implements Executor {

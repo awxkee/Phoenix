@@ -154,24 +154,26 @@ public class PhoenixCenter {
     @AnyThread
     ArrayDeque<PhoenixNotification> getSnapshot(@NonNull final String notificationKey)
     {
-        ArrayDeque<PhoenixNotification> snap = new ArrayDeque<>();
-        if (checkExistsContainer(notificationKey)) {
+        synchronized (mLock) {
+            ArrayDeque<PhoenixNotification> snap = new ArrayDeque<>();
+            if (checkExistsContainer(notificationKey)) {
                 DefaultCenterQueue queue = notificationMap.get(notificationKey);
                 snap = queue.snap();
+            }
+            return snap;
         }
-        return snap;
     }
 
     @AnyThread
     int getNotificationsCount(@NonNull final String notificationKey)
     {
-        if (checkExistsContainer(notificationKey)) {
-            if (notificationMap.containsKey(notificationKey)) {
+        synchronized (mLock) {
+            if (checkExistsContainer(notificationKey)) {
                 DefaultCenterQueue queue = notificationMap.get(notificationKey);
                 return queue.size();
             }
+            return 0;
         }
-        return 0;
     }
 
     @AnyThread
@@ -226,12 +228,10 @@ public class PhoenixCenter {
     {
         ExceptionThrower.throwIfQueueKeyNull(notificationKey);
         synchronized (mLock) {
-
             if (checkExistsContainer(notificationKey)) {
                 DefaultCenterQueue observerList = notificationMap.get(notificationKey);
                 observerList.clearQueue();
             }
-
             return this;
         }
     }
@@ -318,7 +318,6 @@ public class PhoenixCenter {
         ExceptionThrower.throwIfExecutorNull(executor);
         ExceptionThrower.throwIfStreetPolicyNull(streetPolice);
         synchronized (mLock) {
-
             CenterQueue observerList = getQueueOrCreate(notificationKey);
             NotificationSupplier<PhoenixNotification> callbackSupplier = new NotificationSupplier<>(phoenixNotification,
                     streetPolice,

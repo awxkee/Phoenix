@@ -17,7 +17,7 @@ import java.util.HashMap;
 
 
 /**
- * Created by dxfb on 23.05.2017.
+ * Created by Rodion Bartoshyk on 23.05.2017.
  */
 
 public class PhoenixMessaging {

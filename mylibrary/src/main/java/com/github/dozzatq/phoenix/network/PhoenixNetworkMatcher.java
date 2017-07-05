@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.network;
 import java.util.regex.Pattern;
 
 /**
- * Created by dxfb on 21.05.2017.
+ * Created by Rodion Bartoshyk on 21.05.2017.
  */
 
 public class PhoenixNetworkMatcher {

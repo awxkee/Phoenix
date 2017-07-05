@@ -6,7 +6,7 @@ import java.util.ArrayDeque;
 import java.util.Iterator;
 
 /**
- * Created by dxfb on 04.06.2017.
+ * Created by Rodion Bartoshyk on 04.06.2017.
  */
 
 class TaskListenerQueue<PResult> {

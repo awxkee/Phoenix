@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by dxfb on 01.06.2017.
+ * Created by Rodion Bartoshyk on 01.06.2017.
  */
 
 public class IndependentAdManager extends FactoryAd {
@@ -69,22 +69,6 @@ public class IndependentAdManager extends FactoryAd {
         return null;
     }
 
-    @Override
-    public void bindView(View view, int i) {
-        for (FactoryAd factoryAd : queueList) {
-            if (factoryAd.isNativeAdLoaded())
-                factoryAd.bindView(view, i);
-        }
-    }
-
-    @Override
-    public void bindHolder(RecyclerView.ViewHolder viewHolder) {
-        for (FactoryAd factoryAd : queueList) {
-            if (factoryAd.isNativeAdLoaded())
-                factoryAd.bindHolder(viewHolder);
-        }
-    }
-
     @Deprecated
     public boolean isInterstitialLoaded() {
         return false;
@@ -103,6 +87,11 @@ public class IndependentAdManager extends FactoryAd {
         return getFirstNativeLoaded() != null && getFirstNativeLoaded().isNativeAdLoaded();
     }
 
+    @Override
+    public LoyalityWrapper wrap(LoyalityWrapper wrapper) {
+        return getFirstNativeLoaded() != null ? getFirstNativeLoaded().wrap(wrapper) : wrapper;
+    }
+
     private Object object;
 
     @Override
@@ -110,7 +99,7 @@ public class IndependentAdManager extends FactoryAd {
         object = o;
     }
 
-    public FactoryAd getFirstNativeLoaded()
+    private FactoryAd getFirstNativeLoaded()
     {
         for (FactoryAd factoryAd : queueList) {
             if (factoryAd.isNativeAdLoaded())

@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 
 /**
- * Created by dxfb on 10.06.2017.
+ * Created by Rodion Bartoshyk on 10.06.2017.
  */
 
 class PauseCompletionSource<PState> implements ControlQueueService<PState> {
