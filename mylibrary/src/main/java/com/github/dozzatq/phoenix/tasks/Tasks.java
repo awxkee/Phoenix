@@ -63,7 +63,7 @@ public class Tasks {
         return allianceTask(tasks);
     }
 
-    public static TaskAlliance whenAll(Collection<Task> taskCollection)
+    public static TaskAlliance whenAll(Collection<? extends Task> taskCollection)
     {
         return allianceTask(taskCollection);
     }
@@ -78,7 +78,7 @@ public class Tasks {
         return new TaskUnion(taskCollection);
     }
 
-    public static TaskAlliance allianceTask(Collection<Task> taskCollection)
+    public static TaskAlliance allianceTask(Collection<? extends Task> taskCollection)
     {
         return new TaskAlliance(taskCollection);
     }

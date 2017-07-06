@@ -22,7 +22,7 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
         }
     }
 
-    public TaskAlliance(Collection<Task> taskCollection)
+    public TaskAlliance(Collection<? extends Task> taskCollection)
     {
         for (Task task : taskCollection) {
             addEndPointForEach(task);

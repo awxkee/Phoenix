@@ -30,7 +30,7 @@ class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListene
         if (factoryAdList==null)
             throw new NullPointerException("Factory ad list must not be null !");
         called = false;
-        isColded = true;
+        isColded = false;
         this.factoryAdList = factoryAdList;
     }
 
@@ -47,7 +47,7 @@ class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListene
                 promiseTasks.add(InterstitialBundle.promise(config));
             }
 
-            Tasks.whenAll(factoryAdTask).addOnTaskSuccessListener(this);
+            Tasks.whenAll(promiseTasks).addOnTaskSuccessListener(this);
 
             return factoryAdTask;
         }

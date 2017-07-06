@@ -30,7 +30,7 @@ class NativeReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void
         if (factoryAdList==null)
             throw new NullPointerException("Factory ad list must not be null !");
         called = false;
-        isColded = true;
+        isColded = false;
         this.factoryAdList = factoryAdList;
     }
 
@@ -47,7 +47,7 @@ class NativeReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void
                 promiseTasks.add(nativeBundle.promise(config));
             }
 
-            Tasks.whenAll(factoryAdTask).addOnTaskSuccessListener(this);
+            Tasks.whenAll(promiseTasks).addOnTaskSuccessListener(this);
 
             return factoryAdTask;
         }
@@ -103,7 +103,7 @@ class NativeReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void
     @Override
     public NativeBundle snap() {
         synchronized (promiseTasks) {
-            return null;
+            return bundle;
         }
     }
 }
