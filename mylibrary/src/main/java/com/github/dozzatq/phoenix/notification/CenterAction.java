@@ -27,7 +27,7 @@ class CenterAction {
         this.executor = executor;
     }
 
-    public void doCall(final Object... params)
+    void doCall(final Object... params)
     {
         synchronized (mLock) {
             if (actionKey == null && actionComplete==null)
@@ -43,7 +43,7 @@ class CenterAction {
         }
     }
 
-    public boolean isAction(String actionKey)
+    boolean isAction(String actionKey)
     {
         synchronized (mLock) {
             return this.actionKey.equals(actionKey);

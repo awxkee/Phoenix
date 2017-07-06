@@ -1,6 +1,5 @@
 package com.github.dozzatq.phoenix.tasks;
 
-import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 
 import java.util.concurrent.Executor;
@@ -10,13 +9,6 @@ import java.util.concurrent.Executor;
  */
 
 public abstract class CancellableTask<PState> extends Task<PState> {
-
-    private CancellableListenerQueue<PState> stateCancellableListenerQueue;
-
-    public CancellableTask()
-    {
-        stateCancellableListenerQueue = new CancellableListenerQueue<>();
-    }
 
     public abstract boolean cancel();
 
@@ -28,73 +20,49 @@ public abstract class CancellableTask<PState> extends Task<PState> {
 
     public CancellableTask<PState> addOnProgressListener(@NonNull OnProgressListener<? super PState> listener)
     {
-        return addOnProgressListener(MainThreadExecutor.getInstance(), listener);
+        return addOnProgressListener(MainThreadExecutor.getInstance(), listener, true);
     }
 
     public CancellableTask<PState> addOnProgressListener(@NonNull Executor executor,
-                                                         @NonNull OnProgressListener<? super PState> listener)
+                                                         @NonNull OnProgressListener<? super PState> listener, boolean keepSynced)
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
-            ProgressCompletionSource<PState> pStateProgressCompletionSource = new ProgressCompletionSource<PState>(executor, listener);
-            stateCancellableListenerQueue.push(pStateProgressCompletionSource);
-            if (isInProgress())
-            {
-                stateCancellableListenerQueue.callForThis(pStateProgressCompletionSource, this);
-            }
+            ProgressCompletionSource<PState> pStateProgressCompletionSource = new ProgressCompletionSource<PState>(executor, listener, keepSynced);
+            push(pStateProgressCompletionSource);
             return this;
         }
     }
 
     public CancellableTask<PState> addOnCanceledListener(@NonNull OnCanceledListener<? super PState> onCanceledListener)
     {
-        return addOnCanceledListener(MainThreadExecutor.getInstance(), onCanceledListener);
-    }
-
-    @CallSuper
-    public void notifyChangedState()
-    {
-        synchronized (waitObject)
-        {
-            stateCancellableListenerQueue.callQueue(this);
-        }
+        return addOnCanceledListener(MainThreadExecutor.getInstance(), onCanceledListener, false);
     }
 
     public CancellableTask<PState> addOnCanceledListener(@NonNull Executor executor,
-                                                                  @NonNull OnCanceledListener<? super PState> onCanceledListener)
+                                                                  @NonNull OnCanceledListener<? super PState> onCanceledListener, boolean keepSynced)
     {
-        synchronized (waitObject){
-            CancelCompletionSource<PState> cancelCompletionSource = new CancelCompletionSource<PState>(executor, onCanceledListener);
-            stateCancellableListenerQueue.push(cancelCompletionSource);
-            if (isCanceled() )
-            {
-                stateCancellableListenerQueue.callForThis(cancelCompletionSource, this);
-            }
+        synchronized (mLock){
+            CancelCompletionSource<PState> cancelCompletionSource = new CancelCompletionSource<PState>(executor, onCanceledListener, keepSynced);
+            push(cancelCompletionSource);
             return this;
         }
     }
 
     public CancellableTask<PState> removeOnCanceledListener(@NonNull OnCanceledListener<? super PState> onCanceledListener)
     {
-        synchronized (waitObject) {
-            stateCancellableListenerQueue.removeFromQueue(onCanceledListener);
+        synchronized (mLock) {
+            cropQueue(onCanceledListener);
             return this;
         }
     }
 
     public CancellableTask<PState> removeOnProgressListener(@NonNull OnProgressListener<? super PState> listener)
     {
-        synchronized (waitObject) {
-            stateCancellableListenerQueue.removeFromQueue(listener);
+        synchronized (mLock) {
+            cropQueue(listener);
             return this;
         }
     }
 
-    @Override
-    public CancellableTask<PState> keepSynced(boolean keepSynced) {
-        synchronized (waitObject) {
-            stateCancellableListenerQueue.keepSynced(keepSynced);
-        }
-        return (CancellableTask<PState>) super.keepSynced(keepSynced);
-    }
 }

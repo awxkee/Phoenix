@@ -11,17 +11,19 @@ import java.util.concurrent.Executor;
 class TaskFailureCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     private Executor executor;
-    private final Object waitObject=new Object();
+    private final Object mLock = new Object();
     private OnTaskFailureListener<PResult> pResultFailureListener;
+    private boolean keepSynced;
 
-    TaskFailureCompletionSource(Executor executor, OnTaskFailureListener<PResult> pResultFailureListener) {
+    TaskFailureCompletionSource(Executor executor, OnTaskFailureListener<PResult> pResultFailureListener, boolean keepSynced) {
         this.executor = executor;
         this.pResultFailureListener = pResultFailureListener;
+        this.keepSynced = keepSynced;
     }
 
     @Override
-    public void done(@NonNull final Task<PResult> pResultTask) {
-        synchronized (waitObject)
+    public void sync(@NonNull final Task<PResult> pResultTask) {
+        synchronized (mLock)
         {
             if (pResultFailureListener==null)
                 return;
@@ -29,7 +31,7 @@ class TaskFailureCompletionSource<PResult> implements TaskQueueService<PResult> 
             if (executor==null)
                 throw new NullPointerException("Executor & OnFailureListener must not be null!");
 
-            if (pResultTask.isExcepted())
+            if (needSync(pResultTask))
             {
                 executor.execute(new Runnable() {
                     @Override
@@ -43,11 +45,20 @@ class TaskFailureCompletionSource<PResult> implements TaskQueueService<PResult> 
 
     @Override
     public boolean maybeRemove(Object criteria) {
-        synchronized (waitObject) {
-            if (criteria instanceof OnFailureListener)
-                if (criteria.equals(pResultFailureListener))
-                    return true;
-            return false;
+        synchronized (mLock) {
+            return criteria instanceof OnFailureListener && criteria.equals(pResultFailureListener);
+        }
+    }
+
+    @Override
+    public boolean needSync(@NonNull Task<PResult> pResultTask) {
+        return pResultTask.isExcepted();
+    }
+
+    @Override
+    public boolean isKeepSynced() {
+        synchronized (mLock) {
+            return keepSynced;
         }
     }
 }

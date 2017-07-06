@@ -73,7 +73,7 @@ public class Tasks {
         return new TaskUnion(tasks);
     }
 
-    public static TaskUnion whenSame(Collection<Task> taskCollection)
+    public static TaskUnion whenSame(Collection<? extends Task> taskCollection)
     {
         return new TaskUnion(taskCollection);
     }
@@ -128,7 +128,7 @@ public class Tasks {
             this.countDownLatch = new CountDownLatch(1);
         }
 
-        public void await() throws InterruptedException {
+        void await() throws InterruptedException {
             this.countDownLatch.await();
         }
 

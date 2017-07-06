@@ -108,7 +108,9 @@ public class PhoenixDeviceIdGenerator {
                 out.write(id.getBytes());
             } finally {
                 try {
-                    out.close();
+                    if (out != null) {
+                        out.close();
+                    }
                 }
                 catch (Exception e)
                 {

@@ -71,7 +71,6 @@ public class ActivityConnector extends Fragment implements ActivitySupplierInter
         return bundle;
     }
 
-
     @Override
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);

@@ -11,22 +11,27 @@ import java.util.concurrent.Executor;
 class SuccessCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     private Executor executor;
-    private final Object waitObject=new Object();
+    private final Object mLock =new Object();
     private OnSuccessListener<PResult> pResultOnSuccessListener;
+    private boolean keepSynced;
 
-    public SuccessCompletionSource(Executor executor, OnSuccessListener<PResult> pResultOnSuccessListener) {
+    SuccessCompletionSource(Executor executor, OnSuccessListener<PResult> pResultOnSuccessListener, boolean keepSynced) {
         this.executor = executor;
         this.pResultOnSuccessListener = pResultOnSuccessListener;
+        this.keepSynced = keepSynced;
     }
 
     @Override
-    public void done(@NonNull final Task<PResult> pResultTask) {
-        synchronized (waitObject)
+    public void sync(@NonNull final Task<PResult> pResultTask) {
+        synchronized (mLock)
         {
-            if (executor==null || pResultOnSuccessListener==null)
-                throw new NullPointerException("Executor & OnSuccessListener must not be null!");
+            if (executor==null)
+                throw new NullPointerException("Executor must not be null!");
 
-            if (pResultTask.isSuccessful())
+            if (pResultOnSuccessListener == null)
+                return;
+
+            if (needSync(pResultTask))
             {
                 executor.execute(new Runnable() {
                     @Override
@@ -40,11 +45,20 @@ class SuccessCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     @Override
     public boolean maybeRemove(Object criteria) {
-        synchronized (waitObject) {
-            if (criteria instanceof OnSuccessListener)
-                if (criteria.equals(pResultOnSuccessListener))
-                    return true;
-            return false;
+        synchronized (mLock) {
+            return criteria instanceof OnSuccessListener && criteria.equals(pResultOnSuccessListener);
+        }
+    }
+
+    @Override
+    public boolean needSync(@NonNull Task<PResult> pResultTask) {
+        return pResultTask.isSuccessful();
+    }
+
+    @Override
+    public boolean isKeepSynced() {
+        synchronized (mLock) {
+            return keepSynced;
         }
     }
 }

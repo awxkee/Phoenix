@@ -8,53 +8,53 @@ public abstract class ControllableSource<PState> extends TaskCompletionSource<PS
     private ControllableTask<PState> task = new ControllableTask<PState>() {
         @Override
         public boolean pause() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 boolean result = ControllableSource.this.pause();
-                notifyControlChanged();
+                notifyListeners();
                 return result;
             }
         }
 
         @Override
         public boolean resume() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return ControllableSource.this.resume();
             }
         }
 
         @Override
         public boolean isPaused() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return ControllableSource.this.isPaused();
             }
         }
 
         @Override
         public boolean cancel() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 boolean result = ControllableSource.this.cancel();
-                notifyChangedState();
+                task.notifyListeners();
                 return result;
             }
         }
 
         @Override
         public boolean isCanceled() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return ControllableSource.this.isCanceled();
             }
         }
 
         @Override
         public boolean isInProgress() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return ControllableSource.this.isInProgress();
             }
         }
 
         @Override
         public PState getProgress() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return ControllableSource.this.getProgress();
             }
         }
@@ -86,7 +86,7 @@ public abstract class ControllableSource<PState> extends TaskCompletionSource<PS
 
     public final void refreshListenersProgress()
     {
-        task.notifyChangedState();
+        task.notifyListeners();
     }
 
     public abstract boolean cancel();

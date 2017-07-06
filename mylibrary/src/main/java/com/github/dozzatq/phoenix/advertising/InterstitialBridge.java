@@ -1,6 +1,7 @@
 package com.github.dozzatq.phoenix.advertising;
 
 import com.github.dozzatq.phoenix.tasks.OnSuccessListener;
+import com.github.dozzatq.phoenix.tasks.Task;
 
 import java.util.List;
 
@@ -15,6 +16,11 @@ class InterstitialBridge extends InterstitialReviser implements OnSuccessListene
     InterstitialBridge(List<FactoryAd> factoryAdList, InterstitialHelper interstitialHelper, OnSuccessListener<FactoryAd> factoryAdOnSuccessListener) {
         super(factoryAdList, interstitialHelper);
         this.factoryAdOnSuccessListener = factoryAdOnSuccessListener;
+    }
+
+    @Override
+    public Task<FactoryAd> promise(int config) {
+        return super.promise(config).addOnSuccessListener(this);
     }
 
     @Override

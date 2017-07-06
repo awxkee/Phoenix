@@ -12,7 +12,7 @@ public class TaskUnion extends TaskAlliance{
         super(tasks);
     }
 
-    public TaskUnion(Collection<Task> taskCollection) {
+    public TaskUnion(Collection<? extends Task> taskCollection) {
         super(taskCollection);
     }
 

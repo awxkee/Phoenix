@@ -10,19 +10,20 @@ import java.util.Iterator;
  */
 
 class TaskListenerQueue<PResult> {
-    private final Object waitObject = new Object();
+    private final Object mLock = new Object();
     private ArrayDeque<TaskQueueService<PResult>> taskCompleteListeners;
-    private volatile boolean keepSynced;
 
     TaskListenerQueue()
     {
         taskCompleteListeners = new ArrayDeque<>();
     }
 
-    void addService(TaskQueueService<PResult> pResultTaskQueueService)
+    void addService(TaskQueueService<PResult> pResultTaskQueueService, Task<PResult> resultTask)
     {
-        synchronized (waitObject) {
+        synchronized (mLock) {
             taskCompleteListeners.add(pResultTaskQueueService);
+            if (pResultTaskQueueService.needSync(resultTask))
+                callForThis(pResultTaskQueueService, resultTask);
         }
     }
 
@@ -30,7 +31,7 @@ class TaskListenerQueue<PResult> {
     {
         if (listenerCriteria==null)
             return;
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             Iterator<TaskQueueService<PResult>> iterator = taskCompleteListeners.descendingIterator();
             while (iterator.hasNext())
@@ -44,23 +45,25 @@ class TaskListenerQueue<PResult> {
         }
     }
 
-    void callForThis(TaskQueueService<PResult> taskCompleteListener, @NonNull Task<PResult> pResultTask)
+    private void callForThis(TaskQueueService<PResult> taskCompleteListener, @NonNull Task<PResult> pResultTask)
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             if (taskCompleteListener==null)
                 return;
 
-            taskCompleteListener.done(pResultTask);
-            if (!isSynced())
-                if (taskCompleteListeners.contains(taskCompleteListener))
-                    taskCompleteListeners.remove(taskCompleteListener);
+            if (taskCompleteListener.needSync(pResultTask)) {
+                taskCompleteListener.sync(pResultTask);
+                if (!taskCompleteListener.isKeepSynced())
+                    if (taskCompleteListeners.contains(taskCompleteListener))
+                        taskCompleteListeners.remove(taskCompleteListener);
+            }
         }
     }
 
     void callQueue(@NonNull Task<PResult> pResultTask)
     {
-        synchronized (waitObject)
+        synchronized (mLock)
         {
             if (taskCompleteListeners==null)
                 return;
@@ -70,24 +73,16 @@ class TaskListenerQueue<PResult> {
             {
                 TaskQueueService<PResult> pResultTaskQueueService = iterator.next();
                 if (pResultTaskQueueService == null)
-                    throw  new NullPointerException("TaskQueueService must not be null");
-                pResultTaskQueueService.done(pResultTask);
-                if (!isSynced())
-                    iterator.remove();
+                    throw new NullPointerException("TaskQueueService must not be null");
+                if (pResultTaskQueueService.needSync(pResultTask)) {
+                    pResultTaskQueueService.sync(pResultTask);
+                    if (!pResultTaskQueueService.isKeepSynced())
+                        iterator.remove();
+                }
             }
 
         }
     }
 
-    boolean isSynced() {
-        synchronized (waitObject) {
-            return keepSynced;
-        }
-    }
 
-    void keepSynced(boolean keepSynced) {
-        synchronized (waitObject) {
-            this.keepSynced = keepSynced;
-        }
-    }
 }

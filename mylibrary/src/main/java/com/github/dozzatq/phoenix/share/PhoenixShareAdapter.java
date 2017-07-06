@@ -65,14 +65,13 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         };
         Tasks.execute(listTaskSource)
-                .keepSynced(false)
                 .addOnSuccessListener(new OnSuccessListener<List<ResolveInfo>>() {
             @Override
             public void OnSuccess(List<ResolveInfo> resolveInfos) {
                 activities = new ArrayList<>();
                 activities.addAll(resolveInfos);
             }
-        });
+        }, false);
     }
 
     @Override

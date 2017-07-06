@@ -6,7 +6,7 @@ package com.github.dozzatq.phoenix.notification;
 
 class CenterQueue extends DefaultCenterQueue {
 
-    public CenterQueue() {
+    CenterQueue() {
         super();
     }
 }

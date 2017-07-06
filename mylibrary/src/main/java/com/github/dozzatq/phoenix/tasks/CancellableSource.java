@@ -8,30 +8,30 @@ public abstract class CancellableSource<PState> extends TaskCompletionSource<PSt
     private CancellableTask<PState> task = new CancellableTask<PState>() {
         @Override
         public boolean cancel() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 boolean result = CancellableSource.this.cancel();
-                notifyChangedState();
+                task.notifyListeners();
                 return result;
             }
         }
 
         @Override
         public boolean isCanceled() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return CancellableSource.this.isCanceled();
             }
         }
 
         @Override
         public boolean isInProgress() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return CancellableSource.this.isInProgress();
             }
         }
 
         @Override
         public PState getProgress() {
-            synchronized (waitObject) {
+            synchronized (mLock) {
                 return CancellableSource.this.getProgress();
             }
         }
@@ -61,7 +61,7 @@ public abstract class CancellableSource<PState> extends TaskCompletionSource<PSt
 
     public final void refreshListenersProgress()
     {
-        task.notifyChangedState();
+        task.notifyListeners();
     }
 
     public abstract boolean cancel();

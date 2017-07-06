@@ -8,24 +8,36 @@ import java.util.concurrent.Executor;
  * Created by Rodion Bartoshyk on 10.06.2017.
  */
 
-class ProgressCompletionSource<PState> implements StateQueueService<PState> {
+class ProgressCompletionSource<PState> implements TaskQueueService<PState> {
 
     private Executor executor;
-    private final Object waitObject=new Object();
+    private final Object mLock = new Object();
     private OnProgressListener<? super PState> pResultOnSuccessListener;
+    private boolean keepSynced;
 
-    ProgressCompletionSource(Executor executor, OnProgressListener<? super PState> pResultOnSuccessListener) {
+    ProgressCompletionSource(Executor executor, OnProgressListener<? super PState> pResultOnSuccessListener, boolean keepSynced) {
         this.executor = executor;
         this.pResultOnSuccessListener = pResultOnSuccessListener;
+        this.keepSynced = keepSynced;
     }
 
     @Override
-    public void shout(@NonNull final CancellableTask<PState> pResultTask) {
-        synchronized (waitObject) {
-            if (executor == null || pResultOnSuccessListener == null)
-                throw new NullPointerException("Executor & OnProgressListener must not be null!");
+    public void sync(@NonNull Task<PState> pStateTask) {
 
-            if (pResultTask.isInProgress() && !pResultTask.isCanceled()) {
+        if (!(pStateTask instanceof CancellableTask))
+            return;
+
+        synchronized (mLock) {
+
+            final CancellableTask<PState> pResultTask = (CancellableTask<PState>) pStateTask;
+
+            if (pResultOnSuccessListener == null)
+                return;
+
+            if (executor == null)
+                throw new NullPointerException("Executor must not be null!");
+
+            if (needSync(pResultTask)) {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -38,11 +50,23 @@ class ProgressCompletionSource<PState> implements StateQueueService<PState> {
 
     @Override
     public boolean maybeRemove(Object criteria) {
-        synchronized (waitObject) {
-            if (criteria instanceof OnProgressListener)
-                if (criteria.equals(pResultOnSuccessListener))
-                    return true;
+        synchronized (mLock) {
+            return criteria instanceof OnProgressListener && criteria.equals(pResultOnSuccessListener);
+        }
+    }
+
+    @Override
+    public boolean needSync(@NonNull Task<PState> pStateTask) {
+        if (!(pStateTask instanceof CancellableTask))
             return false;
+        final CancellableTask<PState> pResultTask = (CancellableTask<PState>) pStateTask;
+        return pResultTask.isInProgress() && !pResultTask.isCanceled();
+    }
+
+    @Override
+    public boolean isKeepSynced() {
+        synchronized (mLock) {
+            return keepSynced;
         }
     }
 }

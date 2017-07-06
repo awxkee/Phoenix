@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
  */
 
 interface TaskQueueService<PResult> {
-    public void done(@NonNull Task<PResult> pResultTask);
+    public void sync(@NonNull Task<PResult> pResultTask);
     public boolean maybeRemove(Object criteria);
+    public boolean needSync(@NonNull Task<PResult> pResultTask);
+    public boolean isKeepSynced();
 }

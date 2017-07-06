@@ -13,9 +13,9 @@ class ExtensionReviser<PResult, PExtension> implements OnTaskSuccessListener<PRe
     private Executor executor;
     private Extension<PResult, PExtension> extensionTask;
     private Task<PExtension> pExtension;
-    private final Object waitObject = new Object();
+    private final Object mLock = new Object();
 
-    public ExtensionReviser(Executor executor, Extension<PResult, PExtension> extensionTask, Task<PExtension> pExtension) {
+    ExtensionReviser(Executor executor, Extension<PResult, PExtension> extensionTask, Task<PExtension> pExtension) {
         this.executor = executor;
         if (this.executor==null)
             this.executor = Tasks.getDefaultExecutor();
@@ -25,11 +25,11 @@ class ExtensionReviser<PResult, PExtension> implements OnTaskSuccessListener<PRe
 
     @Override
     public void OnTaskSuccess(@NonNull final Task<PResult> pResult) {
-        synchronized (waitObject) {
+        synchronized (mLock) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    synchronized (waitObject) {
+                    synchronized (mLock) {
                         PExtension pExtensionTask = null;
                         try {
                             pExtensionTask = extensionTask.then(pResult);
