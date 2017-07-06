@@ -16,5 +16,13 @@ public abstract class LoyalityWrapper<NA, VH> {
         this.nativeAd = nativeAd;
     }
 
-    abstract void wrap();
+    public abstract void wrap();
+
+    public VH getViewHolder() {
+        return viewHolder;
+    }
+
+    public NA getNativeAd() {
+        return nativeAd;
+    }
 }

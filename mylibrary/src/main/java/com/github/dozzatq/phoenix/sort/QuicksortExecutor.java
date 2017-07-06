@@ -6,7 +6,6 @@ import com.github.dozzatq.phoenix.tasks.Task;
 import com.github.dozzatq.phoenix.tasks.TaskSource;
 import com.github.dozzatq.phoenix.tasks.Tasks;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
