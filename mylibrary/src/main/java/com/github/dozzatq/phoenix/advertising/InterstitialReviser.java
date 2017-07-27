@@ -80,13 +80,15 @@ class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListene
             Iterator<Task<InterstitialBundle>> taskIterator = promiseTasks.iterator();
             Task<InterstitialBundle> bundleTask;
 
-            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null && bundleTask.getResult().state() == InterstitialTrace.STATE_LOADED)
-                listSuccessTasks.add(bundleTask);
+            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null)
+                if (bundleTask.getResult().state() == InterstitialTrace.STATE_LOADED)
+                    listSuccessTasks.add(bundleTask);
 
             taskIterator = promiseTasks.iterator();
 
-            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null && bundleTask.getResult().state() == InterstitialTrace.STATE_FAILED)
-                listFailureTasks.add(bundleTask);
+            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null )
+                if (bundleTask.getResult().state() == InterstitialTrace.STATE_FAILED)
+                    listFailureTasks.add(bundleTask);
 
             taskIterator = listFailureTasks.iterator();
 

@@ -70,13 +70,16 @@ class NativeReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void
             Iterator<Task<NativeBundle>> taskIterator = promiseTasks.iterator();
             Task<NativeBundle> bundleTask;
 
-            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null && bundleTask.getResult().state() == NativeTrace.STATE_LOADED)
-                listSuccessTasks.add(bundleTask);
+            while ((taskIterator.hasNext() &&
+                    (bundleTask = taskIterator.next()) != null))
+                if (bundleTask.getResult().state() == NativeTrace.STATE_LOADED)
+                    listSuccessTasks.add(bundleTask);
 
             taskIterator = promiseTasks.iterator();
 
-            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null && bundleTask.getResult().state() == NativeTrace.STATE_FAILED)
-                listFailureTasks.add(bundleTask);
+            while (taskIterator.hasNext() && (bundleTask = taskIterator.next()) != null)
+                if (bundleTask.getResult().state() == NativeTrace.STATE_FAILED)
+                    listFailureTasks.add(bundleTask);
 
             taskIterator = listFailureTasks.iterator();
 
