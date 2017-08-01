@@ -22,12 +22,12 @@ public class CallbackSupplier<T> {
         this.callback = object;
         this.streetPolice = streetPolice;
         if (streetPolice==null)
-                    this.streetPolice = new StreetPolice() {
-                @Override
-                public void onDestroy() {
-                    destroy();
-                }
-            };
+                this.streetPolice = new StreetPolice() {
+                    @Override
+                    public void onDestroy() {
+                        destroy();
+                    }
+                };
     }
 
     public final boolean isStopped()

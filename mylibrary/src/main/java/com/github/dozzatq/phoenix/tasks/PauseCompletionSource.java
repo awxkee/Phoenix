@@ -57,7 +57,6 @@ class PauseCompletionSource<PState> implements TaskQueueService<PState> {
 
     @Override
     public boolean needSync(@NonNull Task<PState> pStateTask) {
-
         if (!(pStateTask instanceof ControllableTask))
             return false;
         ControllableTask<PState> controllableTask = (ControllableTask<PState>) pStateTask;

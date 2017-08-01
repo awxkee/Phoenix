@@ -6,7 +6,7 @@ import org.json.JSONException;
 import java.util.Iterator;
 
 /**
- * Created by dxfb on 05.07.2017.
+ * Created by Rodion Bartoshyk on 05.07.2017.
  */
 
 class JSONArrayIterator implements Iterator<DeltaSnapshot> {

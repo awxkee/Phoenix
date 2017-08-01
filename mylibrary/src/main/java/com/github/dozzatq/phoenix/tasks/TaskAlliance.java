@@ -3,7 +3,9 @@ package com.github.dozzatq.phoenix.tasks;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by Rodion Bartoshyk on 30.05.2017.
@@ -14,7 +16,21 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
     int taskCount = 0;
     final Object mLock = new Object();
 
-    public TaskAlliance(Task... tasks)
+    public TaskAlliance(@NonNull TaskSource taskSource)
+    {
+        this(Tasks.execute(taskSource));
+    }
+
+    public TaskAlliance(@NonNull TaskSource... taskSources)
+    {
+        List<Task> taskList=new ArrayList<>();
+        for (TaskSource source : taskSources) {
+            taskList.add(Tasks.execute(source));
+        }
+        initCollection(taskList);
+    }
+
+    public TaskAlliance(@NonNull Task... tasks)
     {
         for (Task task : tasks) {
             addEndPointForEach(task);
@@ -22,8 +38,12 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
         }
     }
 
-    public TaskAlliance(Collection<? extends Task> taskCollection)
+    public TaskAlliance(@NonNull Collection<? extends Task> taskCollection)
     {
+        initCollection(taskCollection);
+    }
+
+    private void initCollection(Collection<? extends Task> taskCollection) {
         for (Task task : taskCollection) {
             addEndPointForEach(task);
             taskCount++;
@@ -53,6 +73,14 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
         synchronized (mLock)
         {
             return hasException;
+        }
+    }
+
+    public boolean isFinished()
+    {
+        synchronized (mLock)
+        {
+            return exceptedTask.size() + successTask.size() == taskCount;
         }
     }
 

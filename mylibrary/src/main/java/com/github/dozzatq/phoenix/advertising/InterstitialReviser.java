@@ -3,6 +3,7 @@ package com.github.dozzatq.phoenix.advertising;
 import android.support.annotation.NonNull;
 
 import com.github.dozzatq.phoenix.tasks.OnTaskSuccessListener;
+import com.github.dozzatq.phoenix.tasks.Promise;
 import com.github.dozzatq.phoenix.tasks.Task;
 import com.github.dozzatq.phoenix.tasks.Tasks;
 
@@ -11,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by dxfb on 04.07.2017.
+ * Created by Rodion Bartoshyk on 04.07.2017.
  */
 
 class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void>, Snapper<InterstitialBundle> {
@@ -47,7 +48,7 @@ class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListene
                 promiseTasks.add(InterstitialBundle.promise(config));
             }
 
-            Tasks.whenAll(promiseTasks).addOnTaskSuccessListener(this);
+            new Promise(promiseTasks).addOnTaskSuccessListener(this);
 
             return factoryAdTask;
         }

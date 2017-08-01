@@ -21,7 +21,7 @@ class UnionTask<PFirst, PNext> extends TaskUnion implements OnSuccessListener<Vo
         this.pNextTask = pNextTask;
         this.executor = executor;
         this.unionListener = unionListener;
-        addOnSuccessListener(this.executor, this);
+        addOnSuccessListener(this.executor, this, false);
     }
 
     @Override

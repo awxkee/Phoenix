@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 class SuccessCompletionSource<PResult> implements TaskQueueService<PResult> {
 
     private Executor executor;
-    private final Object mLock =new Object();
+    private final Object mLock = new Object();
     private OnSuccessListener<PResult> pResultOnSuccessListener;
     private boolean keepSynced;
 

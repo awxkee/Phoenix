@@ -30,7 +30,8 @@ public class ActivitySupportConnector extends Fragment implements ActivitySuppli
     {
         ActivitySupportConnector activityConnector;
         WeakReference<ActivitySupportConnector> connectorWeakReference;
-        if ( ( connectorWeakReference= activityWeakReferenceWeakHashMap.get(activity) )!=null && (activityConnector = connectorWeakReference.get())!=null )
+        if ( ( connectorWeakReference = activityWeakReferenceWeakHashMap.get(activity) )!=null &&
+                (activityConnector = connectorWeakReference.get())!=null )
             return activityConnector;
         else {
             try {
@@ -56,7 +57,8 @@ public class ActivitySupportConnector extends Fragment implements ActivitySuppli
             lifecycleCallbacks.put(key, activitySupplier);
             if (activityState>0)
             {
-                new Handler(Looper.getMainLooper()).post(new ActivitySupportInformator(this,activityState, activitySupplier, key));
+                new Handler(Looper.getMainLooper())
+                        .post(new ActivitySupportInformator(this,activityState, activitySupplier, key));
             }
         }else {
             throw new IllegalStateException("This Lifecycle Callback already added to fragment");

@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.advertising;
 
 /**
- * Created by dxfb on 05.07.2017.
+ * Created by Rodion Bartoshyk on 05.07.2017.
  */
 
 public abstract class LoyalityWrapper<NA, VH> {

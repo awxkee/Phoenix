@@ -5,7 +5,7 @@ import com.github.dozzatq.phoenix.tasks.Task;
 
 
 /**
- * Created by dxfb on 04.07.2017.
+ * Created by Rodion Bartoshyk on 04.07.2017.
  */
 
 class InterstitialBundle extends InterstitialTrace<InterstitialBundle> implements Prominence<InterstitialBundle>, Reflector {

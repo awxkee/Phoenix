@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Created by RondailP on 04.10.2016.
  */
-public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements OnSuccessListener<List<ResolveInfo>>{
 
     private AppCompatActivity appContext;
     private Intent shareIntent;
@@ -65,13 +65,7 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         };
         Tasks.execute(listTaskSource)
-                .addOnSuccessListener(new OnSuccessListener<List<ResolveInfo>>() {
-            @Override
-            public void OnSuccess(List<ResolveInfo> resolveInfos) {
-                activities = new ArrayList<>();
-                activities.addAll(resolveInfos);
-            }
-        }, false);
+                .addOnSuccessListener(this, false);
     }
 
     @Override
@@ -177,5 +171,11 @@ public class PhoenixShareAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             return activities.size();
         }
         else return 0;
+    }
+
+    @Override
+    public void OnSuccess(List<ResolveInfo> resolveInfos) {
+        activities = new ArrayList<>();
+        activities.addAll(resolveInfos);
     }
 }

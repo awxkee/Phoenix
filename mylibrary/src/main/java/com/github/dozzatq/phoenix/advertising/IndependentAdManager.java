@@ -1,10 +1,6 @@
 package com.github.dozzatq.phoenix.advertising;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-
-import com.github.dozzatq.phoenix.tasks.Task;
-import com.github.dozzatq.phoenix.tasks.Tasks;
 
 import java.util.ArrayList;
 import java.util.List;

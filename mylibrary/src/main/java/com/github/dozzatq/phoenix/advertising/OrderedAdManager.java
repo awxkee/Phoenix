@@ -33,9 +33,12 @@ public class OrderedAdManager extends FactoryAd{
 
     @Override
     public void showInterstitial(final int config, final InterstitialHelper interstitialHelper) {
-        if (preferredInterstitial!=null)
+        if (preferredInterstitial!=null) {
             preferredInterstitial.showInterstitial(config, interstitialHelper);
-        else loadInterstitial(config, new InterstitialHelper() {
+            clearInterstitial();
+        }
+        else
+            loadInterstitial(config, new InterstitialHelper() {
             @Override
             public void OnInterstitialShowed(FactoryAd factoryAd) {
                 interstitialHelper.OnInterstitialShowed(factoryAd);
@@ -62,6 +65,11 @@ public class OrderedAdManager extends FactoryAd{
                 interstitialHelper.OnInterstitialImpression(factoryAd);
             }
         });
+    }
+
+    private void clearInterstitial() {
+        preferredInterstitial = null;
+        interstitialBridge = null;
     }
 
     @Override

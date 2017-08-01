@@ -1,5 +1,7 @@
 package com.github.dozzatq.phoenix.tasks;
 
+import android.support.annotation.NonNull;
+
 import java.util.Collection;
 
 /**
@@ -8,15 +10,23 @@ import java.util.Collection;
 
 public class TaskUnion extends TaskAlliance{
 
-    public TaskUnion(Task... tasks) {
+    public TaskUnion(@NonNull TaskSource taskSource) {
+        super(taskSource);
+    }
+
+    public TaskUnion(@NonNull TaskSource... taskSources) {
+        super(taskSources);
+    }
+
+    public TaskUnion(@NonNull Task... tasks) {
         super(tasks);
     }
 
-    public TaskUnion(Collection<? extends Task> taskCollection) {
+    public TaskUnion(@NonNull Collection<? extends Task> taskCollection) {
         super(taskCollection);
     }
 
-    public TaskUnion(Task task) {
+    public TaskUnion(@NonNull Task task) {
         super(task);
     }
 
