@@ -9,10 +9,10 @@ import java.util.Map;
  * Created by Rodion Bartoshyk on 01.08.2017.
  */
 
-public abstract class FCMExecutor {
+public abstract class FCMScheduler {
     private Map<String, String> data;
 
-    public FCMExecutor() {
+    public FCMScheduler() {
 
     }
 

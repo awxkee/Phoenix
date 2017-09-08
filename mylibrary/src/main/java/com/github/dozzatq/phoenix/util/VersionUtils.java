@@ -4,6 +4,10 @@ import android.os.Build;
 
 public final class VersionUtils {
 
+    public static boolean isAfter26() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+    }
+
     public static boolean isAfter25() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1;
     }

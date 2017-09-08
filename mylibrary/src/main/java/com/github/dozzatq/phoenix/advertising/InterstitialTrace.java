@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.advertising;
 import com.github.dozzatq.phoenix.tasks.Task;
 
 /**
- * Created by Rodion Bartoshyk on 04.07.2017.
+ * Created by Rodion Bartoshik on 04.07.2017.
  */
 
 abstract class InterstitialTrace<T> extends InterstitialHelper implements StateTracer{
@@ -14,6 +14,8 @@ abstract class InterstitialTrace<T> extends InterstitialHelper implements StateT
     final static int STATE_LOADED = 2;
     final static int STATE_FAILED = 3;
 
+    protected abstract int getConfig();
+
     private Task<T> stateTask = new Task<T>();
 
     InterstitialTrace(InterstitialHelper traceHelper) {
@@ -22,16 +24,19 @@ abstract class InterstitialTrace<T> extends InterstitialHelper implements StateT
 
     @Override
     public void OnInterstitialShowed(FactoryAd factoryAd) {
+        StatisticsInterstitialDelegate.getInstance().OnInterstitialShowed(factoryAd, getConfig());
         traceHelper.OnInterstitialShowed(factoryAd);
     }
 
     @Override
     public void OnInterstitialDismissed(FactoryAd factoryAd) {
+        StatisticsInterstitialDelegate.getInstance().OnInterstitialDismissed(factoryAd, getConfig());
         traceHelper.OnInterstitialDismissed(factoryAd);
     }
 
     @Override
     public void OnInterstitialImpression(FactoryAd factoryAd) {
+        StatisticsInterstitialDelegate.getInstance().OnInterstitialImpression(factoryAd, getConfig());
         traceHelper.OnInterstitialImpression(factoryAd);
     }
 

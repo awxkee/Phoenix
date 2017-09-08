@@ -14,6 +14,7 @@ class InterstitialBundle extends InterstitialTrace<InterstitialBundle> implement
 
     private boolean called;
     private int state;
+    private int config;
 
     InterstitialBundle(FactoryAd factoryAd, InterstitialHelper traceHelper) {
         super(traceHelper);
@@ -27,6 +28,7 @@ class InterstitialBundle extends InterstitialTrace<InterstitialBundle> implement
 
         called = true;
         state = STATE_BURNED;
+        this.config = config;
         factoryAd.loadInterstitial(config, this);
         return getTask();
     }
@@ -39,12 +41,14 @@ class InterstitialBundle extends InterstitialTrace<InterstitialBundle> implement
     @Override
     public void OnInterstitialLoaded(FactoryAd factoryAd) {
         state = STATE_LOADED;
+        StatisticsInterstitialDelegate.getInstance().OnInterstitialLoaded(factoryAd, config);
         getTask().setResult(this);
     }
 
     @Override
     public void OnInterstitialFailedToLoad(FactoryAd factoryAd) {
         state = STATE_FAILED;
+        StatisticsInterstitialDelegate.getInstance().OnInterstitialFailedToLoad(factoryAd, config);
         getTask().setResult(this);
     }
 
@@ -56,5 +60,10 @@ class InterstitialBundle extends InterstitialTrace<InterstitialBundle> implement
     @Override
     public int state() {
         return state;
+    }
+
+    @Override
+    protected int getConfig() {
+        return config;
     }
 }

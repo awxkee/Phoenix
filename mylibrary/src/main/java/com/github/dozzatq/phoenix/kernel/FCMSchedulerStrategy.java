@@ -12,31 +12,31 @@ import java.util.Map;
  * Created by Rodion Bartoshyk on 01.08.2017.
  */
 
-class FCMExecutionStrategy extends FCMTask {
+class FCMSchedulerStrategy extends FCMTask {
 
-    private ArrayDeque<FCMExecutor> fcmExecutors;
+    private ArrayDeque<FCMScheduler> fcmSchedulers;
     private final Object mLock = new Object();
 
-    FCMExecutionStrategy() {
-        this.fcmExecutors = new ArrayDeque<>();
+    FCMSchedulerStrategy() {
+        this.fcmSchedulers = new ArrayDeque<>();
     }
 
     @Override
-    public FCMTask add(@NonNull FCMExecutor fcmExecutor)
+    public FCMTask add(@NonNull FCMScheduler fcmScheduler)
     {
-        throwIfExecutorNull(fcmExecutor);
+        throwIfExecutorNull(fcmScheduler);
         synchronized (mLock) {
-            fcmExecutors.add(fcmExecutor);
+            fcmSchedulers.add(fcmScheduler);
             return this;
         }
     }
 
     @Override
-    public FCMTask remove(@NonNull FCMExecutor fcmExecutor) {
-        throwIfExecutorNull(fcmExecutor);
+    public FCMTask remove(@NonNull FCMScheduler fcmScheduler) {
+        throwIfExecutorNull(fcmScheduler);
         synchronized (mLock) {
-            if (fcmExecutors.contains(fcmExecutor))
-                fcmExecutors.remove(fcmExecutor);
+            if (fcmSchedulers.contains(fcmScheduler))
+                fcmSchedulers.remove(fcmScheduler);
             return this;
         }
     }
@@ -48,8 +48,8 @@ class FCMExecutionStrategy extends FCMTask {
 
         synchronized (mLock)
         {
-            Iterator<FCMExecutor> fcmExecutorIterator = fcmExecutors.descendingIterator();
-            FCMExecutor executor;
+            Iterator<FCMScheduler> fcmExecutorIterator = fcmSchedulers.descendingIterator();
+            FCMScheduler executor;
             while (fcmExecutorIterator.hasNext() ) {
                 executor = fcmExecutorIterator.next();
                 boolean callingResult = call(context, executor, dataMap);
@@ -60,16 +60,16 @@ class FCMExecutionStrategy extends FCMTask {
     }
 
     @Override
-    public boolean call(@NonNull Context context,@NonNull FCMExecutor fcmExecutor, @NonNull Map<String, String> dataMap) {
-        throwIfExecutorNull(fcmExecutor);
+    public boolean call(@NonNull Context context, @NonNull FCMScheduler fcmScheduler, @NonNull Map<String, String> dataMap) {
+        throwIfExecutorNull(fcmScheduler);
         throwIfContextNull(context);
         synchronized (mLock) {
-            if (fcmExecutors.contains(fcmExecutor))
+            if (fcmSchedulers.contains(fcmScheduler))
             {
-                if (fcmExecutor.isSuccessIndex())
+                if (fcmScheduler.isSuccessIndex())
                 {
-                    fcmExecutor.setData(dataMap);
-                    fcmExecutor.execute(context);
+                    fcmScheduler.setData(dataMap);
+                    fcmScheduler.execute(context);
                     return true;
                 }
             }
@@ -78,21 +78,21 @@ class FCMExecutionStrategy extends FCMTask {
     }
 
     @Override
-    public Deque<FCMExecutor> getDeque() {
+    public Deque<FCMScheduler> getDeque() {
         synchronized (mLock) {
-            return fcmExecutors;
+            return fcmSchedulers;
         }
     }
 
     @Override
     public int size() {
         synchronized (mLock) {
-            return fcmExecutors.size();
+            return fcmSchedulers.size();
         }
     }
 
-    private void throwIfExecutorNull(@NonNull FCMExecutor fcmExecutor) {
-        if (fcmExecutor == null)
+    private void throwIfExecutorNull(@NonNull FCMScheduler fcmScheduler) {
+        if (fcmScheduler == null)
             throw new NullPointerException("Push Executor must not be null !");
     }
 

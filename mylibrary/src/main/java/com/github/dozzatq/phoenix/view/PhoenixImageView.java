@@ -8,8 +8,9 @@ import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.github.dozzatq.phoenix.drawable.FadingDrawable;
 
 public class PhoenixImageView extends AppCompatImageView {
@@ -31,21 +32,21 @@ public class PhoenixImageView extends AppCompatImageView {
         Drawable placeholder = getDrawable();
         if (placeholder instanceof AnimationDrawable) {
             ((AnimationDrawable) placeholder).stop();
-            Glide.clear(this);
         }
     }
 
     public void loadBitmap(String url)
     {
         Glide.with(this.getContext())
-                .load(url)
                 .asBitmap()
-                .fitCenter()
+                .load(url)
+                .apply(new RequestOptions().fitCenter())
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
-                    public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                    public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
                         setImageBitmap(resource);
                     }
+
                 });
     }
 

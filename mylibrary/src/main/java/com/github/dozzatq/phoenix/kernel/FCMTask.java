@@ -12,16 +12,18 @@ import java.util.Map;
 
 public abstract class FCMTask {
 
-    public abstract FCMTask add(@NonNull FCMExecutor fcmExecutor);
-    public abstract FCMTask remove(@NonNull FCMExecutor fcmExecutor);
+    public abstract FCMTask add(@NonNull FCMScheduler fcmScheduler);
+    public abstract FCMTask remove(@NonNull FCMScheduler fcmScheduler);
     public abstract FCMTask run(@NonNull Context context, @NonNull Map<String, String> dataMap);
-    public abstract boolean call(@NonNull Context context, @NonNull FCMExecutor fcmExecutor, @NonNull Map<String, String> dataMap);
-    public abstract Deque<FCMExecutor> getDeque();
+    public abstract boolean call(@NonNull Context context,
+                                 @NonNull FCMScheduler fcmScheduler,
+                                 @NonNull Map<String, String> dataMap);
+    public abstract Deque<FCMScheduler> getDeque();
     public abstract int size();
 
     @NonNull
     public static FCMTask get()
     {
-        return new FCMExecutionStrategy();
+        return new FCMSchedulerStrategy();
 }
 }
