@@ -36,6 +36,8 @@
 -keepclasseswithmembernames public interface com.github.dozzatq.phoenix.tasks.Extension { *;}
 -keepclasseswithmembernames public interface com.github.dozzatq.phoenix.notification.PhoenixNotification { *;}
 -keepclasseswithmembernames public interface com.github.dozzatq.phoenix.notification.OnActionComplete { *;}
+-keepclasseswithmembernames public class com.github.dozzatq.phoenix.advertising.TraceInterstitialHelper { *; }
+-keepclasseswithmembernames public class com.github.dozzatq.phoenix.advertising.TraceNativeHelper { *; }
 -keepclasseswithmembernames  public class com.github.dozzatq.phoenix.notification.NotificationHandler { *;}
 
 -keepattributes *Annotation*

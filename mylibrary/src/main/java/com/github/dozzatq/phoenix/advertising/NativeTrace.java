@@ -14,7 +14,9 @@ abstract class NativeTrace<T> extends NativeHelper implements StateTracer{
     final static int STATE_LOADED = 2;
     final static int STATE_FAILED = 3;
 
-    private Task<T> stateTask = new Task<T>();
+    private Task<T> stateTask = new Task<>();
+
+    public abstract int getConfig();
 
     NativeTrace(NativeHelper traceHelper) {
         this.traceHelper = traceHelper;
@@ -27,6 +29,7 @@ abstract class NativeTrace<T> extends NativeHelper implements StateTracer{
 
     @Override
     public void OnImpressionNative(FactoryAd factoryAd) {
+        StatisticsNativeDelegate.getInstance().OnImpressionNative(factoryAd,getConfig() );
         traceHelper.OnImpressionNative(factoryAd);
     }
 

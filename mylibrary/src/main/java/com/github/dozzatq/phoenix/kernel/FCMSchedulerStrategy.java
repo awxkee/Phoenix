@@ -1,6 +1,7 @@
 package com.github.dozzatq.phoenix.kernel;
 
 import android.content.Context;
+import android.support.annotation.GuardedBy;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayDeque;
@@ -14,7 +15,9 @@ import java.util.Map;
 
 class FCMSchedulerStrategy extends FCMTask {
 
+    @GuardedBy("mLock")
     private ArrayDeque<FCMScheduler> fcmSchedulers;
+
     private final Object mLock = new Object();
 
     FCMSchedulerStrategy() {
@@ -66,9 +69,9 @@ class FCMSchedulerStrategy extends FCMTask {
         synchronized (mLock) {
             if (fcmSchedulers.contains(fcmScheduler))
             {
+                fcmScheduler.setData(dataMap);
                 if (fcmScheduler.isSuccessIndex())
                 {
-                    fcmScheduler.setData(dataMap);
                     fcmScheduler.execute(context);
                     return true;
                 }

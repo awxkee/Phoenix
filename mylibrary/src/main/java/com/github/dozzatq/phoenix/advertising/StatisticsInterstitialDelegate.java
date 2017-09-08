@@ -1,6 +1,5 @@
 package com.github.dozzatq.phoenix.advertising;
 
-import com.github.dozzatq.phoenix.Phoenix;
 
 /**
  * Created by Rodion Bartoshik on 23.08.2017.
@@ -17,7 +16,7 @@ public class StatisticsInterstitialDelegate {
     public static StatisticsInterstitialDelegate newInstance(TraceInterstitialHelper helper) {
         StatisticsInterstitialDelegate localInstance = StatisticsInterstitialDelegate.localInstance;
         if (localInstance == null) {
-            synchronized (Phoenix.class) {
+            synchronized (StatisticsInterstitialDelegate.class) {
                 localInstance = StatisticsInterstitialDelegate.localInstance;
                 if (localInstance == null) {
                     StatisticsInterstitialDelegate.localInstance = localInstance = new StatisticsInterstitialDelegate(helper);
@@ -30,7 +29,7 @@ public class StatisticsInterstitialDelegate {
     public static StatisticsInterstitialDelegate getInstance() {
         StatisticsInterstitialDelegate localInstance = StatisticsInterstitialDelegate.localInstance;
         if (localInstance == null) {
-            synchronized (Phoenix.class) {
+            synchronized (StatisticsInterstitialDelegate.class) {
                 localInstance = StatisticsInterstitialDelegate.localInstance;
                 if (localInstance == null) {
                     StatisticsInterstitialDelegate.localInstance = localInstance = new StatisticsInterstitialDelegate();

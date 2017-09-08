@@ -19,6 +19,8 @@ class NativeBundle extends NativeTrace<NativeBundle> implements Prominence<Nativ
             throw new NullPointerException("Factory ad must not be null !");
     }
 
+    private int config = 0;
+
     @Override
     public Task<NativeBundle> promise(int config) {
 
@@ -26,6 +28,7 @@ class NativeBundle extends NativeTrace<NativeBundle> implements Prominence<Nativ
             throw new IllegalStateException("This Native Bundle Already Configured !!!!");
 
         called = true;
+        this.config = config;
         state = STATE_BURNED;
         factoryAd.loadNative(config, this);
         return getTask();
@@ -51,12 +54,19 @@ class NativeBundle extends NativeTrace<NativeBundle> implements Prominence<Nativ
     @Override
     public void OnNativeLoaded(FactoryAd factoryAd) {
         state = STATE_LOADED;
+        StatisticsNativeDelegate.getInstance().OnNativeLoaded(factoryAd,getConfig() );
         getTask().setResult(this);
     }
 
     @Override
     public void OnNativeFailedToLoad(FactoryAd factoryAd) {
         state = STATE_FAILED;
+        StatisticsNativeDelegate.getInstance().OnNativeFailedToLoad(factoryAd,getConfig() );
         getTask().setResult(this);
+    }
+
+    @Override
+    public int getConfig() {
+        return config;
     }
 }
