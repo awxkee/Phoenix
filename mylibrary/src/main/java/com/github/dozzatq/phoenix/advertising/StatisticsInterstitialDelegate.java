@@ -1,11 +1,13 @@
 package com.github.dozzatq.phoenix.advertising;
 
 
+import android.support.annotation.NonNull;
+
 /**
  * Created by Rodion Bartoshik on 23.08.2017.
  */
 
-public class StatisticsInterstitialDelegate {
+public class StatisticsInterstitialDelegate extends TraceInterstitialHelper{
 
     private static StatisticsInterstitialDelegate localInstance = null;
 
@@ -45,28 +47,39 @@ public class StatisticsInterstitialDelegate {
         this.interstitialHelper = interstitialHelper;
     }
 
-    void OnInterstitialShowed(FactoryAd factoryAd, int config) {
+    @Override
+    public void OnInterstitialShowed(FactoryAd factoryAd, int config) {
         if (interstitialHelper!=null)
             interstitialHelper.OnInterstitialShowed(factoryAd, config);
     }
 
-    void OnInterstitialLoaded(FactoryAd factoryAd, int config) {
+    @Override
+    public void OnInterstitialLoaded(FactoryAd factoryAd, int config) {
         if (interstitialHelper!=null)
             interstitialHelper.OnInterstitialLoaded(factoryAd, config);
     }
 
-    void OnInterstitialFailedToLoad(FactoryAd factoryAd, int config) {
+    @Override
+    public void OnInterstitialFailedToLoad(FactoryAd factoryAd, int config) {
         if (interstitialHelper!=null)
             interstitialHelper.OnInterstitialFailedToLoad(factoryAd, config);
     }
 
-    void OnInterstitialDismissed(FactoryAd factoryAd, int config) {
+    @Override
+    public void OnInterstitialDismissed(FactoryAd factoryAd, int config) {
         if (interstitialHelper!=null)
             interstitialHelper.OnInterstitialDismissed(factoryAd, config);
     }
 
-    void OnInterstitialImpression(FactoryAd factoryAd, int config) {
+    @Override
+    public void OnInterstitialImpression(FactoryAd factoryAd, int config) {
         if (interstitialHelper!=null)
             interstitialHelper.OnInterstitialImpression(factoryAd, config);
+    }
+
+    @Override
+    public void OnRequest(@NonNull FactoryAd factoryAd, int config) {
+        if (interstitialHelper!=null)
+            interstitialHelper.OnRequest(factoryAd, config);
     }
 }

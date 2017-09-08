@@ -68,4 +68,10 @@ public class StatisticsNativeDelegate extends TraceNativeHelper {
         if (mNativeHelper != null)
             mNativeHelper.OnNativeFailedToLoad(factoryAd, config);
     }
+
+    @Override
+    public void OnRequest(@NonNull FactoryAd factoryAd, int config) {
+        if (mNativeHelper != null)
+            mNativeHelper.OnRequest(factoryAd, config);
+    }
 }

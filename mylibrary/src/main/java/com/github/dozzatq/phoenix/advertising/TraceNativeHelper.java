@@ -11,4 +11,5 @@ public abstract class TraceNativeHelper {
     public abstract void OnNativeBind(@NonNull FactoryAd factoryAd, int config);
     public abstract void OnImpressionNative(@NonNull FactoryAd factoryAd, int config);
     public abstract void OnNativeFailedToLoad(@NonNull FactoryAd factoryAd, int config);
+    public abstract void OnRequest(@NonNull FactoryAd factoryAd, int config);
 }

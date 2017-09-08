@@ -29,6 +29,7 @@ class InterstitialBundle extends InterstitialTrace<InterstitialBundle> implement
         called = true;
         state = STATE_BURNED;
         this.config = config;
+        StatisticsInterstitialDelegate.getInstance().OnRequest(factoryAd, config);
         factoryAd.loadInterstitial(config, this);
         return getTask();
     }

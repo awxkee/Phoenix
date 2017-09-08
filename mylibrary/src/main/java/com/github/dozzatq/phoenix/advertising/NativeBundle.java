@@ -30,6 +30,7 @@ class NativeBundle extends NativeTrace<NativeBundle> implements Prominence<Nativ
         called = true;
         this.config = config;
         state = STATE_BURNED;
+        StatisticsNativeDelegate.getInstance().OnRequest(factoryAd, config);
         factoryAd.loadNative(config, this);
         return getTask();
     }

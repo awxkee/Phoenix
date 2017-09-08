@@ -12,4 +12,5 @@ public abstract class TraceInterstitialHelper {
     public abstract void OnInterstitialFailedToLoad(@NonNull FactoryAd factoryAd, int config);
     public abstract void OnInterstitialDismissed(@NonNull FactoryAd factoryAd, int config);
     public abstract void OnInterstitialImpression(@NonNull FactoryAd factoryAd, int config);
+    public abstract void OnRequest(@NonNull FactoryAd factoryAd, int config);
 }
