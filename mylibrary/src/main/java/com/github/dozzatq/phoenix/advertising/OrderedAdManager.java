@@ -34,6 +34,7 @@ public class OrderedAdManager extends FactoryAd{
     @Override
     public void showInterstitial(final int config, final InterstitialHelper interstitialHelper) {
         if (preferredInterstitial!=null) {
+            StatisticsInterstitialDelegate.getInstance().OnInterstitialShowed(preferredInterstitial, config);
             preferredInterstitial.showInterstitial(config, interstitialHelper);
             clearInterstitial();
         }

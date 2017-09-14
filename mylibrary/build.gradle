@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 66
-        versionName "1.6.5"
+        versionCode 69
+        versionName "1.6.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
         testHandleProfiling true
@@ -37,6 +37,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
     implementation 'com.android.support:appcompat-v7:26.0.2'
+    api "com.google.firebase:firebase-invites:11.2.2"
     implementation 'com.android.support:design:26.0.2'
     implementation 'com.android.volley:volley:1.0.0'
     implementation 'com.google.code.gson:gson:2.8.0'
