@@ -75,6 +75,8 @@ public class PhoenixUtilities {
     private static Boolean isTablet = null;
     private static int adjustOwnerClassGuid = 0;
 
+    private static Boolean isRTL = null;
+
     private static Paint roundPaint;
     private static RectF bitmapRect;
 
@@ -88,6 +90,12 @@ public class PhoenixUtilities {
     public PhoenixUtilities()
     {
         handler = new Handler(Phoenix.getInstance().getContext().getMainLooper());
+        isRTL = Phoenix.getInstance().getBoolean(R.bool.is_right_to_left);
+    }
+
+    public static boolean isRTL()
+    {
+        return isRTL;
     }
 
     private static double[] rgbToHsv(int r, int g, int b) {

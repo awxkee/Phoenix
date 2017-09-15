@@ -22,42 +22,58 @@ public class LinksOutlet {
     public static final String META_DOMAIN = "com.phoenix.dynamic.domain";
     public static final String META_IOS_STORE_APPID = "com.phoenix.dynamic.ios.store.appid";
     public static final String META_IOS_BUNDLE = "com.phoenix.dynamic.ios.bundle";
+    public static final String META_ANDROID_BUNDLE = "com.phoenix.dynamic.android.bundle";
+    public static final String META_ANDROID_MIN_VERSION = "com.phoenix.dynamic.android.min.version";
 
     private static String mAppStoreId=null;
     private static String mIosBundle=null;
     private static String mAppDomain=null;
+    private static String mAndroidPackage = null;
+    private static String mAndroidMinVersion = null;
 
     public static Uri getLink(@NonNull Uri url)
     {
-        return getLink(url, null, null,null, null, null, null).buildDynamicLink().getUri();
+        return getNativeLink(url, null, null,null, null, null, null).buildDynamicLink().getUri();
     }
 
     public static Uri getLink(@NonNull Uri url, @Nullable String title, @Nullable String description, @Nullable Uri imageUri)
     {
-        return getLink(url, title, description, imageUri, null, null,null).buildDynamicLink().getUri();
+        return getNativeLink(url, title, description, imageUri, null, null,null).buildDynamicLink().getUri();
     }
 
     public static Uri getLink(@NonNull Uri url, @Nullable String campaign, @Nullable String source, @Nullable String medium)
     {
-        return getLink(url, null, null, null, campaign, source,medium).buildDynamicLink().getUri();
+        return getNativeLink(url, null, null, null, campaign, source,medium).buildDynamicLink().getUri();
+    }
+
+    public static Uri getLink(@NonNull Uri url, @Nullable String title, @Nullable String description, @Nullable Uri imageUri,
+                                               @Nullable String campaign, @Nullable String source, @Nullable String medium)
+    {
+        return getNativeLink(url, title, description, imageUri, campaign, source, medium).buildDynamicLink().getUri();
     }
 
     public static Task<ShortDynamicLink> getShortenLink(@NonNull Uri url)
     {
-        return getLink(url, null, null,null, null, null, null).buildShortDynamicLink();
+        return getNativeLink(url, null, null,null, null, null, null).buildShortDynamicLink();
     }
 
     public static Task<ShortDynamicLink> getShortenLink(@NonNull Uri url, @Nullable String title, @Nullable String description, @Nullable Uri imageUri)
     {
-        return getLink(url, title, description, imageUri, null, null,null).buildShortDynamicLink();
+        return getNativeLink(url, title, description, imageUri, null, null,null).buildShortDynamicLink();
     }
 
     public static Task<ShortDynamicLink> getShortenLink(@NonNull Uri url, @Nullable String campaign, @Nullable String source, @Nullable String medium)
     {
-        return getLink(url, null, null, null, campaign, source,medium).buildShortDynamicLink();
+        return getNativeLink(url, null, null, null, campaign, source,medium).buildShortDynamicLink();
     }
 
-    private static DynamicLink.Builder getLink(@NonNull Uri url, @Nullable String title, @Nullable String description, @Nullable Uri imageUri,
+    public static Task<ShortDynamicLink> getShortenLink(@NonNull Uri url, @Nullable String title, @Nullable String description, @Nullable Uri imageUri,
+                                              @Nullable String campaign, @Nullable String source, @Nullable String medium)
+    {
+        return getNativeLink(url, title, description, imageUri, campaign, source, medium).buildShortDynamicLink();
+    }
+
+    private static DynamicLink.Builder getNativeLink(@NonNull Uri url, @Nullable String title, @Nullable String description, @Nullable Uri imageUri,
         @Nullable String campaign, @Nullable String source, @Nullable String medium)
     {
         if (mAppDomain==null || mIosBundle == null || mAppStoreId == null) {
@@ -70,6 +86,8 @@ public class LinksOutlet {
                 mAppDomain = bundle.getString(META_DOMAIN);
                 mIosBundle = bundle.getString(META_IOS_BUNDLE);
                 mAppStoreId = String.valueOf(bundle.getInt(META_IOS_STORE_APPID));
+                mAndroidPackage = bundle.getString(META_ANDROID_BUNDLE);
+                mAndroidMinVersion = String.valueOf(bundle.getInt(META_ANDROID_MIN_VERSION));
             } catch (PackageManager.NameNotFoundException ignored) {
             } catch (NullPointerException ignored) {
             }
@@ -108,11 +126,19 @@ public class LinksOutlet {
         if (source!=null)
             googleAnalyticsBuilder.setSource(source);
 
+        DynamicLink.AndroidParameters.Builder androidLinkBuilder;
+        if (mAndroidPackage==null)
+            androidLinkBuilder = new DynamicLink.AndroidParameters.Builder();
+        else
+            androidLinkBuilder = new DynamicLink.AndroidParameters.Builder(mAndroidPackage);
+
+        if (mAndroidMinVersion!=null)
+            androidLinkBuilder.setMinimumVersion(Integer.parseInt(mAndroidMinVersion));
+
         DynamicLink.Builder dynamicLinkBuilder=FirebaseDynamicLinks.getInstance().createDynamicLink()
                 .setLink(url)
                 .setDynamicLinkDomain(mAppDomain)
-                .setAndroidParameters(new DynamicLink.AndroidParameters.Builder()
-                        .build())
+                .setAndroidParameters(androidLinkBuilder.build())
                 .setGoogleAnalyticsParameters(googleAnalyticsBuilder.build())
                 .setSocialMetaTagParameters(socialMetaTagParameters);
 
