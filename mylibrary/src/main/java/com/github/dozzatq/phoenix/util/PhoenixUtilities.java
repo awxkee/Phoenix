@@ -1,11 +1,17 @@
 package com.github.dozzatq.phoenix.util;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -21,8 +27,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.view.ViewPager;
+import android.support.v4.widget.EdgeEffectCompat;
+import android.support.v7.app.AlertDialog;
+import android.telephony.TelephonyManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TypefaceSpan;
 import android.util.DisplayMetrics;
@@ -37,21 +48,27 @@ import android.widget.EdgeEffect;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.github.dozzatq.phoenix.fonts.PhoenixTypeface;
 import com.github.dozzatq.phoenix.Phoenix;
 import com.github.dozzatq.phoenix.R;
+import com.github.dozzatq.phoenix.numbers.PhoenixNumbers;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -63,34 +80,37 @@ public class PhoenixUtilities {
     private static final Object smsLock = new Object();
     private static final Object callLock = new Object();
 
-    public static int statusBarHeight = 0;
-    public static float density = 1;
-    public static Point displaySize = new Point();
+    private static int statusBarHeight = 0;
+    private static float density = 1;
+    private static Point displaySize = new Point();
     public static boolean incorrectDisplaySizeFix;
-    public static Integer photoSize = null;
-    public static DisplayMetrics displayMetrics = new DisplayMetrics();
-    public static int leftBaseline;
-    public static boolean usingHardwareInput;
+    private static Integer photoSize = null;
+    private static DisplayMetrics displayMetrics = new DisplayMetrics();
+    private static int leftBaseline;
+    private static boolean usingHardwareInput;
     public static boolean isInMultiwindow;
     private static Boolean isTablet = null;
     private static int adjustOwnerClassGuid = 0;
+    private static boolean adsLock = false;
 
     private static Boolean isRTL = null;
 
     private static Paint roundPaint;
     private static RectF bitmapRect;
 
-    static {
-        leftBaseline = isTablet() ? 80 : 72;
-        checkDisplaySize(Phoenix.getInstance().getContext(), null);
-    }
-
     private static Handler handler;
 
     public PhoenixUtilities()
     {
+        leftBaseline = isTablet() ? 80 : 72;
+        checkDisplaySize(Phoenix.getInstance().getContext(), null);
         handler = new Handler(Phoenix.getInstance().getContext().getMainLooper());
         isRTL = Phoenix.getInstance().getBoolean(R.bool.is_right_to_left);
+        int resourceId = Phoenix.getInstance().getResources()
+                .getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = Phoenix.getInstance().getDimensionPixelSize(resourceId);
+        }
     }
 
     public static boolean isRTL()
@@ -98,70 +118,14 @@ public class PhoenixUtilities {
         return isRTL;
     }
 
-    private static double[] rgbToHsv(int r, int g, int b) {
-        double rf = r / 255.0;
-        double gf = g / 255.0;
-        double bf = b / 255.0;
-        double max = (rf > gf && rf > bf) ? rf : (gf > bf) ? gf : bf;
-        double min = (rf < gf && rf < bf) ? rf : (gf < bf) ? gf : bf;
-        double h, s;
-        double d = max - min;
-        s = max == 0 ? 0 : d / max;
-        if (max == min) {
-            h = 0;
-        } else {
-            if (rf > gf && rf > bf) {
-                h = (gf - bf) / d + (gf < bf ? 6 : 0);
-            } else if (gf > bf) {
-                h = (bf - rf) / d + 2;
-            } else {
-                h = (rf - gf) / d + 4;
-            }
-            h /= 6;
-        }
-        return new double[]{h, s, max};
+    public static boolean isAdLocked()
+    {
+        return adsLock;
     }
 
-    private static int[] hsvToRgb(double h, double s, double v) {
-        double r = 0, g = 0, b = 0;
-        double i = (int) Math.floor(h * 6);
-        double f = h * 6 - i;
-        double p = v * (1 - s);
-        double q = v * (1 - f * s);
-        double t = v * (1 - (1 - f) * s);
-        switch ((int) i % 6) {
-            case 0:
-                r = v;
-                g = t;
-                b = p;
-                break;
-            case 1:
-                r = q;
-                g = v;
-                b = p;
-                break;
-            case 2:
-                r = p;
-                g = v;
-                b = t;
-                break;
-            case 3:
-                r = p;
-                g = q;
-                b = v;
-                break;
-            case 4:
-                r = t;
-                g = p;
-                b = v;
-                break;
-            case 5:
-                r = v;
-                g = p;
-                b = q;
-                break;
-        }
-        return new int[]{(int) (r * 255), (int) (g * 255), (int) (b * 255)};
+    public static void lockAds(boolean newValue)
+    {
+        adsLock = newValue;
     }
 
     public static void requestAdjustResize(Activity activity, int classGuid) {
@@ -181,7 +145,7 @@ public class PhoenixUtilities {
         }
     }
 
-
+    @SuppressLint("WrongConstant")
     public static void lockOrientation(Activity activity) {
         if (activity == null || prevOrientation != -10) {
             return;
@@ -223,6 +187,35 @@ public class PhoenixUtilities {
             
         }
     }
+
+    public static boolean isGoogleMapsInstalled(final Activity fragment) {
+        try {
+            Phoenix.getInstance().getPackageManager().getApplicationInfo("com.google.android.apps.maps", 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            if (fragment == null) {
+                return false;
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(fragment);
+            builder.setMessage("Install Google Maps?");
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("market://details?id=com.google.android.apps.maps"));
+                        fragment.startActivityForResult(intent, 500);
+                    } catch (Exception e) {
+
+                    }
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, null);
+            builder.show();
+            return false;
+        }
+    }
+
 
     public static boolean isWaitingForSms() {
         boolean value;
@@ -314,7 +307,7 @@ public class PhoenixUtilities {
             if (file != null) {
                 return file;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         return new File("");
@@ -356,7 +349,7 @@ public class PhoenixUtilities {
                 Display display = manager.getDefaultDisplay();
                 if (display != null) {
                     display.getMetrics(displayMetrics);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+                    if (VersionUtils.isAfter13()) {
                         display.getSize(displaySize);
                     }
                 }
@@ -375,6 +368,77 @@ public class PhoenixUtilities {
             }
         } catch (Exception e) {
         }
+    }
+
+    public static void setViewPagerEdgeEffectColor(ViewPager viewPager, int color) {
+        if (VersionUtils.isAfter21()) {
+            try {
+                Field field = ViewPager.class.getDeclaredField("mLeftEdge");
+                field.setAccessible(true);
+                EdgeEffectCompat mLeftEdge = (EdgeEffectCompat) field.get(viewPager);
+                if (mLeftEdge != null) {
+                    field = EdgeEffectCompat.class.getDeclaredField("mEdgeEffect");
+                    field.setAccessible(true);
+                    EdgeEffect mEdgeEffect = (EdgeEffect) field.get(mLeftEdge);
+                    if (mEdgeEffect != null) {
+                        mEdgeEffect.setColor(color);
+                    }
+                }
+
+                field = ViewPager.class.getDeclaredField("mRightEdge");
+                field.setAccessible(true);
+                EdgeEffectCompat mRightEdge = (EdgeEffectCompat) field.get(viewPager);
+                if (mRightEdge != null) {
+                    field = EdgeEffectCompat.class.getDeclaredField("mEdgeEffect");
+                    field.setAccessible(true);
+                    EdgeEffect mEdgeEffect = (EdgeEffect) field.get(mRightEdge);
+                    if (mEdgeEffect != null) {
+                        mEdgeEffect.setColor(color);
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public static void setScrollViewEdgeEffectColor(ScrollView scrollView, int color) {
+        if (VersionUtils.isAfter21()) {
+            try {
+                Field field = ScrollView.class.getDeclaredField("mEdgeGlowTop");
+                field.setAccessible(true);
+                EdgeEffect mEdgeGlowTop = (EdgeEffect) field.get(scrollView);
+                if (mEdgeGlowTop != null) {
+                    mEdgeGlowTop.setColor(color);
+                }
+
+                field = ScrollView.class.getDeclaredField("mEdgeGlowBottom");
+                field.setAccessible(true);
+                EdgeEffect mEdgeGlowBottom = (EdgeEffect) field.get(scrollView);
+                if (mEdgeGlowBottom != null) {
+                    mEdgeGlowBottom.setColor(color);
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public static void shakeView(final View view, final float x, final int num) {
+        if (num == 6) {
+            view.setTranslationX(0);
+            return;
+        }
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(ObjectAnimator.ofFloat(view, "translationX", dp(x)));
+        animatorSet.setDuration(50);
+        animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                shakeView(view, num == 5 ? 0 : -x, num + 1);
+            }
+        });
+        animatorSet.start();
     }
 
     public static float getPixelsInCM(float cm, boolean isX) {
@@ -416,6 +480,13 @@ public class PhoenixUtilities {
     public static void cancelRunOnUIThread(Runnable runnable) {
         Handler handler = new Handler(Phoenix.getInstance().getContext().getMainLooper());
         handler.removeCallbacks(runnable);
+    }
+
+    public static byte[] calcAuthKeyHash(byte[] auth_key) {
+        byte[] sha1 = PhoenixNumbers.computeSHA1(auth_key);
+        byte[] key_hash = new byte[16];
+        System.arraycopy(sha1, 0, key_hash, 0, 16);
+        return key_hash;
     }
 
     public static boolean isTablet() {
@@ -981,4 +1052,37 @@ public class PhoenixUtilities {
         matrix.preScale(sx, sy);
         matrix.preTranslate(tx, ty);
     }
+
+    public static boolean isDeviceRooted() {
+        return checkRootMethod1() || checkRootMethod2() || checkRootMethod3();
+    }
+
+    private static boolean checkRootMethod1() {
+        String buildTags = android.os.Build.TAGS;
+        return buildTags != null && buildTags.contains("test-keys");
+    }
+
+    private static boolean checkRootMethod2() {
+        String[] paths = { "/system/app/Superuser.apk", "/sbin/su", "/system/bin/su", "/system/xbin/su", "/data/local/xbin/su", "/data/local/bin/su", "/system/sd/xbin/su",
+                "/system/bin/failsafe/su", "/data/local/su", "/su/bin/su"};
+        for (String path : paths) {
+            if (new File(path).exists()) return true;
+        }
+        return false;
+    }
+
+    private static boolean checkRootMethod3() {
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(new String[] { "/system/xbin/which", "su" });
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            return in.readLine() != null;
+        } catch (Throwable t) {
+            return false;
+        } finally {
+            if (process != null) process.destroy();
+        }
+    }
+
+
 }

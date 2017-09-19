@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by rodeon on 5/26/17.
+ * Created by Rodion Bartoshyk on 5/26/17.
  */
 
 public class Tasks {

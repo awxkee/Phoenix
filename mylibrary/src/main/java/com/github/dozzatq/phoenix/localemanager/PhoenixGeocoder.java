@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by rodeon on 5/24/17.
+ * Created by Rodion Bartoshyk on 5/24/17.
  */
 
 public class PhoenixGeocoder {

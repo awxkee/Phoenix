@@ -1,6 +1,7 @@
 package com.github.dozzatq.phoenix.advertising;
 
 import com.github.dozzatq.phoenix.tasks.OnSuccessListener;
+import com.github.dozzatq.phoenix.util.PhoenixUtilities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,8 @@ public class OrderedAdManager extends FactoryAd{
 
     @Override
     public void showInterstitial(final int config, final InterstitialHelper interstitialHelper) {
+        if (PhoenixUtilities.isAdLocked())
+            return;
         if (preferredInterstitial!=null) {
             StatisticsInterstitialDelegate.getInstance().OnInterstitialShowed(preferredInterstitial, config);
             preferredInterstitial.showInterstitial(config, interstitialHelper);
@@ -76,6 +79,8 @@ public class OrderedAdManager extends FactoryAd{
     @Override
     public void loadInterstitial(final int config, final InterstitialHelper interstitialHelper) {
         synchronized (mLock) {
+            if (PhoenixUtilities.isAdLocked())
+                return;
             preferredInterstitial = null;
             if (interstitialBridge !=null)
                 interstitialBridge.cold();
@@ -100,6 +105,8 @@ public class OrderedAdManager extends FactoryAd{
     @Override
     public void loadNative(int config, final NativeHelper nativeHelper) {
         synchronized (mLock) {
+            if (PhoenixUtilities.isAdLocked())
+                return;
             preferredNativeAd = null;
             if (nativeBridge !=null)
                 nativeBridge.cold();

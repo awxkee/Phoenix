@@ -2,6 +2,8 @@ package com.github.dozzatq.phoenix.advertising;
 
 import android.view.View;
 
+import com.github.dozzatq.phoenix.util.PhoenixUtilities;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,10 @@ public class IndependentAdManager extends FactoryAd {
 
     @Override
     public void loadNative(int i, final NativeHelper nativeHelper) {
+
+        if (PhoenixUtilities.isAdLocked())
+            return;
+
         if (isNativeAdLoaded())
             throw new IllegalStateException("Native Ads already loaded in current IndependentAdManager");
         for (FactoryAd ad : queueList) {

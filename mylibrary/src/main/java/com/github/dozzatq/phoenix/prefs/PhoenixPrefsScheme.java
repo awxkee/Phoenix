@@ -8,7 +8,7 @@ import android.preference.PreferenceManager;
 import com.github.dozzatq.phoenix.Phoenix;
 
 /**
- * Created by RondailP on 12.10.2016.
+ * Created by Rodion Bartoshyk on 12.10.2016.
  */
 public class PhoenixPrefsScheme {
 

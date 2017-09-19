@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.util;
 
 /**
- * Created by RondailP on 25.03.2016.
+ * Created by Rodion Bartoshyk on 25.03.2016.
  */
 import android.content.Context;
 import android.os.Build;

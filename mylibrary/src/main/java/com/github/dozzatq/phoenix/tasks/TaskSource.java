@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.tasks;
 
 /**
- * Created by rodeon on 5/26/17.
+ * Created by Rodion Bartoshyk on 5/26/17.
  */
 
 public abstract class TaskSource<PResult> extends TaskCompletionSource<PResult>{

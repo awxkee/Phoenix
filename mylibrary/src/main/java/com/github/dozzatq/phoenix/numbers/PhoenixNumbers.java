@@ -1,6 +1,8 @@
 package com.github.dozzatq.phoenix.numbers;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,7 +10,7 @@ public class PhoenixNumbers {
 
     private static Pattern pattern = Pattern.compile("[\\-0-9]+");
 
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
     public static Integer parseInt(String value) {
         if (value == null) {
@@ -143,6 +145,52 @@ public class PhoenixNumbers {
             }
         }
         return result;
+    }
+
+    public static byte[] computeSHA1(byte[] convertme, int offset, int len) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(convertme, offset, len);
+            return md.digest();
+        } catch (Exception e) {
+
+        }
+        return new byte[20];
+    }
+
+
+    public static byte[] computeSHA1(byte[] convertme) {
+        return computeSHA1(convertme, 0, convertme.length);
+    }
+
+    public static byte[] computeSHA256(byte[] convertme, int offset, int len) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(convertme, offset, len);
+            return md.digest();
+        } catch (Exception e) {
+
+        }
+        return null;
+    }
+
+
+    public static String md5(String md5) {
+        if (md5 == null) {
+            return null;
+        }
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(md5.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (int a = 0; a < array.length; a++) {
+                sb.append(Integer.toHexString((array[a] & 0xFF) | 0x100).substring(1, 3));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+
+        }
+        return null;
     }
 
 }

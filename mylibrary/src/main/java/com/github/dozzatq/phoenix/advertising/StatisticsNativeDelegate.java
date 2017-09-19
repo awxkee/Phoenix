@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.advertising;
 import android.support.annotation.NonNull;
 
 /**
- * Created by rodeon on 9/8/17.
+ * Created by Rodion Bartoshyk on 9/8/17.
  */
 
 public class StatisticsNativeDelegate extends TraceNativeHelper {
