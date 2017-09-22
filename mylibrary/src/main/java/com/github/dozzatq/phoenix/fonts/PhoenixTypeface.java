@@ -7,7 +7,7 @@ import com.github.dozzatq.phoenix.Phoenix;
 import java.util.Hashtable;
 
 /**
- * Created by Rodion Bartoshyk on 20.05.2017.
+ * Created by Rodion Bartoshik on 20.05.2017.
  */
 
 public class PhoenixTypeface {

@@ -1,39 +1,45 @@
 package com.github.dozzatq.phoenix.tasks;
 
 import android.os.Looper;
+import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by Rodion Bartoshyk on 5/26/17.
+ * Created by Rodion Bartoshik on 5/26/17.
  */
 
 public class Tasks {
-    private static ThreadPoolExecutor threadPoolExecutor;
+    private static final ThreadPoolExecutor threadPoolExecutor;
+
     static {
         int numCores = Runtime.getRuntime().availableProcessors();
         threadPoolExecutor = new ThreadPoolExecutor(numCores * 2, numCores *2,
                 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
+
+    @NonNull
+    @AnyThread
     public static Executor getDefaultExecutor()
     {
         return threadPoolExecutor;
     }
 
+    @WorkerThread
     public static <PResult> PResult await(@NonNull Task<PResult> task) throws ExecutionException,InterruptedException{
         if (Looper.getMainLooper()==Looper.myLooper())
             throw new IllegalStateException("Tasks.await must not be called on the main thread");
-        if(task == null) {
-            throw new NullPointerException("Task must not be null");
-        }
+        throwIfTaskNull(task);
         if (task.isComplete())
             return getResultTask(task);
         else {
@@ -45,7 +51,9 @@ public class Tasks {
         }
     }
 
-    private static <TResult> TResult getResultTask(Task<TResult> task) throws ExecutionException {
+    @AnyThread
+    private static <TResult> TResult getResultTask(@NonNull Task<TResult> task) throws ExecutionException {
+        throwIfTaskNull(task);
         if(task.isSuccessful()) {
             return task.getResult();
         } else {
@@ -53,70 +61,142 @@ public class Tasks {
         }
     }
 
-    public static TaskAlliance allianceTask(Task... tasks)
+    private static <TResult> void throwIfTaskNull(@NonNull Task<TResult> task) {
+        if (task==null)
+            throw new NullPointerException("Task must not be null!");
+    }
+
+    @AnyThread
+    public static TaskAlliance allianceTask(@NonNull Task... tasks)
     {
         return new TaskAlliance(tasks);
     }
 
-    public static TaskAlliance whenAll(Task... tasks)
+    @AnyThread
+    public static TaskAlliance whenAll(@NonNull Task... tasks)
     {
         return allianceTask(tasks);
     }
 
-    public static TaskAlliance whenAll(Collection<? extends Task> taskCollection)
+    @AnyThread
+    public static TaskAlliance whenAll(@NonNull Collection<? extends Task> taskCollection)
     {
         return allianceTask(taskCollection);
     }
 
-    public static TaskUnion whenSame(Task... tasks)
+    @AnyThread
+    public static TaskUnion whenSame(@NonNull Task... tasks)
     {
         return new TaskUnion(tasks);
     }
 
-    public static TaskUnion whenSame(Collection<? extends Task> taskCollection)
+    @AnyThread
+    public static TaskUnion whenSame(@NonNull Collection<? extends Task> taskCollection)
     {
         return new TaskUnion(taskCollection);
     }
 
-    public static TaskAlliance allianceTask(Collection<? extends Task> taskCollection)
+    @AnyThread
+    public static TaskAlliance allianceTask(@NonNull Collection<? extends Task> taskCollection)
     {
         return new TaskAlliance(taskCollection);
     }
 
-    public static TaskAlliance allianceTask(Task task)
+    @AnyThread
+    public static TaskAlliance allianceTask(@NonNull Task task)
     {
         return new TaskAlliance(task);
     }
 
-    public static <PResult> Task<PResult> execute(final TaskSource<PResult> taskSource)
+    @AnyThread
+    public static <PResult> Task<PResult> execute(@NonNull final TaskSource<PResult> taskSource)
     {
+        throwIfTaskSourceNull(taskSource);
         return execute(getDefaultExecutor(), taskSource);
     }
 
-    public static <PResult> ControllableTask<PResult> execute(final ControllableSource<PResult> controllableSource)
+    private static void throwIfTaskSourceNull(TaskCompletionSource taskSource)
     {
+        if (taskSource==null)
+            throw new NullPointerException("Task Source must not be null!");
+    }
+
+    @AnyThread
+    public static <PResult> ControllableTask<PResult> execute(@NonNull final ControllableSource<PResult> controllableSource)
+    {
+        throwIfTaskSourceNull(controllableSource);
         return execute(getDefaultExecutor(), controllableSource);
     }
 
-    public static <PResult> ControllableTask<PResult> execute(Executor executor, final ControllableSource<PResult> taskSource)
+    @AnyThread
+    public static <PResult> ControllableTask<PResult> execute(@NonNull Executor executor,@NonNull final ControllableSource<PResult> taskSource)
     {
+        throwIfExecutorNull(executor);
+        throwIfTaskSourceNull(taskSource);
         executor.execute(taskSource.getRunnable());
         return taskSource.getTask();
     }
 
-    public static <PResult> CancellableTask<PResult> execute(final CancellableSource<PResult> controllableSource)
+    @AnyThread
+    public static Task<Void> execute(@NonNull final Runnable runnable)
     {
+        return execute(getDefaultExecutor(), runnable);
+    }
+
+    @AnyThread
+    public static Task<Void> execute(@NonNull Executor executor, @NonNull final Runnable runnable)
+    {
+        throwIfExecutorNull(executor);
+        throwIfRunnableNull(runnable);
+        final Task<Void> task = new Task<>();
+        threadPoolExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        runnable.run();
+                        task.setResult(null);
+                    }
+                    catch (Exception exception)
+                    {
+                        task.setException(exception);
+                    }
+                }
+        });
+        return task;
+    }
+
+    private static void throwIfRunnableNull(@NonNull Runnable runnable) {
+        if (runnable==null)
+            throw new NullPointerException("Runnable must not be null");
+    }
+
+    @AnyThread
+    public static <PResult> CancellableTask<PResult> execute(@NonNull final CancellableSource<PResult> controllableSource)
+    {
+        throwIfTaskSourceNull(controllableSource);
         return execute(getDefaultExecutor(), controllableSource);
     }
 
-    public static <PResult> CancellableTask<PResult> execute(Executor executor, final CancellableSource<PResult> taskSource)
+    @AnyThread
+    public static <PResult> CancellableTask<PResult> execute(@NonNull Executor executor,@NonNull final CancellableSource<PResult> taskSource)
     {
+        throwIfExecutorNull(executor);
+        throwIfTaskSourceNull(taskSource);
         executor.execute(taskSource.getRunnable());
         return taskSource.getTask();
     }
 
-    public static <PResult> Task<PResult> execute(Executor executor, final TaskCompletionSource<PResult> taskSource)
+    private static void throwIfExecutorNull(Executor executor)
     {
+        if (executor==null)
+            throw new NullPointerException("Executor must not be null");
+    }
+
+    @AnyThread
+    public static <PResult> Task<PResult> execute(@NonNull Executor executor,@NonNull final TaskCompletionSource<PResult> taskSource)
+    {
+        throwIfExecutorNull(executor);
+        throwIfTaskSourceNull(taskSource);
         executor.execute(taskSource.getRunnable());
         return taskSource.getTask();
     }

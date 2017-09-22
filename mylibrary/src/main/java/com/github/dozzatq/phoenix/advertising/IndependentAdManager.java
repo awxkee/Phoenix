@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Rodion Bartoshyk on 01.06.2017.
+ * Created by Rodion Bartoshik on 01.06.2017.
  */
 
 public class IndependentAdManager extends FactoryAd {

@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 04.06.2017.
+ * Created by Rodion Bartoshik on 04.06.2017.
  */
 
 abstract class DefaultCenterQueue {

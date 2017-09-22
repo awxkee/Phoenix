@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.share;
 
 /**
- * Created by Rodion Bartoshyk on 04.10.2016.
+ * Created by Rodion Bartoshik on 04.10.2016.
  */
 public class PhoenixShare {
 

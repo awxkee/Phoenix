@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 06.12.2016.
+ * Created by Rodion Bartoshik on 06.12.2016.
  */
 
 public class PhoenixCenter {

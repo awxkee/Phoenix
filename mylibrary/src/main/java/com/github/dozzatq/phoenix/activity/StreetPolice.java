@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.MainThread;
 
 /**
- * Created by Rodion Bartoshyk on 01.07.2017.
+ * Created by Rodion Bartoshik on 01.07.2017.
  */
 
 public abstract class StreetPolice{

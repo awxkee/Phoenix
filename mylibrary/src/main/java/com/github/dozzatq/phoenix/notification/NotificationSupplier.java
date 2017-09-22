@@ -8,7 +8,7 @@ import com.github.dozzatq.phoenix.activity.StreetPolice;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 02.07.2017.
+ * Created by Rodion Bartoshik on 02.07.2017.
  */
 
 class NotificationSupplier<T> extends CallbackSupplier<T> implements Executor{

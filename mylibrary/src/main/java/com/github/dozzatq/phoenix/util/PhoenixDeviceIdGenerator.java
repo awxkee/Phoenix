@@ -1,11 +1,12 @@
 package com.github.dozzatq.phoenix.util;
 
 /**
- * Created by Rodion Bartoshyk on 25.03.2016.
+ * Created by Rodion Bartoshik on 25.03.2016.
  */
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import java.io.File;
@@ -22,7 +23,8 @@ public class PhoenixDeviceIdGenerator {
     private static final String EMULATOR_ANDROID_ID = "9774d56d682e549c";
     private static final String[] BAD_SERIAL_PATTERNS = {"1234567", "abcdef", "dead00beef"};
 
-    public static String readDeviceId(Context context) {
+    @NonNull
+    public static String readDeviceId(@NonNull Context context) {
         String deviceId;
         String androidSerialId = null;
         try {

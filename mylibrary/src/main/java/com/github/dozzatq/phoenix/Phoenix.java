@@ -48,7 +48,7 @@ import java.io.File;
 import java.util.Locale;
 
 /**
- * Created by Rodion on 05.12.2016.
+ * Created by Rodion Bartoshik on 05.12.2016.
  */
 
 public class Phoenix {
@@ -140,7 +140,7 @@ public class Phoenix {
         return getContext().getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
     }
 
-    public int checkSelfPermission(String permission)
+    public int checkSelfPermission(@NonNull String permission)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return getContext().checkSelfPermission(permission);
@@ -177,7 +177,7 @@ public class Phoenix {
         return getContext().getMainLooper();
     }
 
-    public Phoenix startService(Intent intentService)
+    public Phoenix startService(@NonNull Intent intentService)
     {
         getContext().startService(intentService);
         return this;
@@ -187,12 +187,14 @@ public class Phoenix {
     {
         return PhoenixUtilities.isTablet();
     }
+
+    @NonNull
     public PhoenixUtilities getUtilities()
     {
         return new PhoenixUtilities();
     }
 
-    public Uri getExposedUri(Uri toExpose)
+    public Uri getExposedUri(@NonNull Uri toExpose)
     {
         File file = new File(toExpose.getPath());
         try {
@@ -204,7 +206,7 @@ public class Phoenix {
         }
     }
 
-    public Uri getExposedUri(File toExpose)
+    public Uri getExposedUri(@NonNull File toExpose)
     {
         try {
             return FileProvider.getUriForFile(getContext(), getPackageName() + ".fileprovider", toExpose);
@@ -226,7 +228,7 @@ public class Phoenix {
         return LayoutInflater.from(getContext());
     }
 
-    public Typeface getTypeface(String assetPath)
+    public Typeface getTypeface(@NonNull String assetPath)
     {
         return PhoenixTypeface.getTypeface(assetPath);
     }
@@ -299,14 +301,14 @@ public class Phoenix {
     }
 
     @AnyThread
-    public PhoenixCenter postNotificationDelayed(final String notificationKey, int delay, final Object... values)
+    public PhoenixCenter postNotificationDelayed(@NonNull final String notificationKey, int delay, final Object... values)
     {
         getCenter().postNotificationDelayed(notificationKey, delay, values);
         return getCenter();
     }
 
     @AnyThread
-    public PhoenixCenter postNotification(final String notificationKey,final Object... values)
+    public PhoenixCenter postNotification(@NonNull final String notificationKey,final Object... values)
     {
         getCenter().postNotification(notificationKey, values);
         return getCenter();
@@ -343,7 +345,7 @@ public class Phoenix {
         return getContext().getPackageName();
     }
 
-    public Object getSystemService(String service)
+    public Object getSystemService(@NonNull String service)
     {
         return getContext().getSystemService(service);
     }
@@ -357,69 +359,74 @@ public class Phoenix {
         return applicationContext;
     }
 
-    public void setContext(Context applicationContext) {
+    public void setContext(@NonNull Context applicationContext) {
+        if (applicationContext==null)
+            throw new NullPointerException("Context must not be null!!");
         this.applicationContext = applicationContext;
         requestQueue = Volley.newRequestQueue(applicationContext);
         new PhoenixUtilities();
     }
 
-    public Phoenix putString(String key, String value)
+    public Phoenix putString(@NonNull String key, String value)
     {
         PhoenixPreferences.getInstance().putString(key, value);
         return this;
     }
 
-    public boolean putStringFuture(String key, String value)
+    public boolean putStringFuture(@NonNull String key, @NonNull String value)
     {
         return PhoenixPreferences.getInstance().putStringFuture(key, value);
     }
 
-    public String getString(String key)
+    public String getString(@NonNull String key)
     {
         return PhoenixPreferences.getInstance().getString(key, null);
     }
 
-    public Phoenix putBoolean(String key, boolean value)
+    public Phoenix putBoolean(@NonNull String key, boolean value)
     {
         PhoenixPreferences.getInstance().putBoolean(key, value);
         return this;
     }
 
-    public boolean putBooleanFuture(String key, boolean value)
+    public boolean putBooleanFuture(@NonNull String key, boolean value)
     {
         return PhoenixPreferences.getInstance().putBooleanFuture(key, value);
     }
 
-    public boolean getBoolean(String key, boolean default_bool)
+    public boolean getBoolean(@NonNull String key, boolean default_bool)
     {
         return PhoenixPreferences.getInstance().getBoolean(key, default_bool);
     }
 
-    public Phoenix removeValue(String key)
+    public Phoenix removeValue(@NonNull String key)
     {
         PhoenixPreferences.getInstance().removeValue(key);
         return this;
     }
 
-    public Phoenix putLong(String key, Long value)
+    public Phoenix putLong(@NonNull String key, Long value)
     {
         PhoenixPreferences.getInstance().putLongFuture(key, value);
         return this;
     }
 
-    public boolean putLongFuture(String key, Long value)
+    public boolean putLongFuture(@NonNull String key, Long value)
     {
         return PhoenixPreferences.getInstance().putLongFuture(key, value);
     }
 
-    public Phoenix runOnUIThread(Runnable runnable, int delay)
+    public Phoenix runOnUIThread(@NonNull Runnable runnable, int delay)
     {
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.postDelayed(runnable, delay);
+        if (delay>=0)
+            handler.postDelayed(runnable, delay);
+        else
+            handler.post(runnable);
         return this;
     }
 
-    public Phoenix runOnUIThread(Runnable runnable)
+    public Phoenix runOnUIThread(@NonNull Runnable runnable)
     {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(runnable);
@@ -431,41 +438,41 @@ public class Phoenix {
         return Uri.parse(String.format(Locale.US,"android.resource://%s/", getPackageName()) + resId);
     }
 
-    public long getLong(String key, long defValue) {
+    public long getLong(@NonNull String key, long defValue) {
         return PhoenixPreferences.getInstance().getLong(key, defValue);
     }
 
-    public Phoenix putFloat(String key, Float value)
+    public Phoenix putFloat(@NonNull String key, Float value)
     {
         PhoenixPreferences.getInstance().putFloat(key, value);
         return this;
     }
 
-    public boolean putFloatFuture(String key, Float value)
+    public boolean putFloatFuture(@NonNull String key, Float value)
     {
         return PhoenixPreferences.getInstance().putFloatFuture(key, value);
     }
 
-    public float getFloat(String key, float defValue) {
+    public float getFloat(@NonNull String key, float defValue) {
         return PhoenixPreferences.getInstance().getFloat(key, defValue);
     }
 
-    public Phoenix putInt(String key, Integer value)
+    public Phoenix putInt(@NonNull String key, Integer value)
     {
         PhoenixPreferences.getInstance().putInt(key, value);
         return this;
     }
 
-    public boolean putIntFuture(String key, Integer value)
+    public boolean putIntFuture(@NonNull String key, Integer value)
     {
         return PhoenixPreferences.getInstance().putIntFuture(key, value);
     }
 
-    public int getInt(String key, int defValue) {
+    public int getInt(@NonNull String key, int defValue) {
         return PhoenixPreferences.getInstance().getInt(key, defValue);
     }
 
-    public String getString(String key, String defValue) {
+    public String getString(@NonNull String key, String defValue) {
         return PhoenixPreferences.getInstance().getString(key, defValue);
     }
 

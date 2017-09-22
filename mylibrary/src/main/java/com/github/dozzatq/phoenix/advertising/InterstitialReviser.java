@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by Rodion Bartoshyk on 04.07.2017.
+ * Created by Rodion Bartoshik on 04.07.2017.
  */
 
 class InterstitialReviser implements Prominence<FactoryAd>, OnTaskSuccessListener<Void>, Snapper<InterstitialBundle> {

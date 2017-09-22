@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 /**
- * Created by Rodion Bartoshyk on 20.05.2017.
+ * Created by Rodion Bartoshik on 20.05.2017.
  */
 
 public class PhoenixHashing {

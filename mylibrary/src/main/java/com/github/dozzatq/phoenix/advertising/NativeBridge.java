@@ -6,7 +6,7 @@ import com.github.dozzatq.phoenix.tasks.Task;
 import java.util.List;
 
 /**
- * Created by Rodion Bartoshyk on 05.07.2017.
+ * Created by Rodion Bartoshik on 05.07.2017.
  */
 
 class NativeBridge extends NativeReviser implements OnSuccessListener<FactoryAd>{

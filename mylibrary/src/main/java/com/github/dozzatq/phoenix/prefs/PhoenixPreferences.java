@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.prefs;
 
 /**
- * Created by Rodion Bartoshyk on 09.09.2016.
+ * Created by Rodion Bartoshik on 09.09.2016.
  */
 public class PhoenixPreferences extends PhoenixPrefsScheme {
     private static PhoenixPreferences ourInstance = null;

@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Rodion Bartoshyk on 03.05.2017.
+ * Created by Rodion Bartoshik on 03.05.2017.
  */
 
 public class OrderedAdManager extends FactoryAd{

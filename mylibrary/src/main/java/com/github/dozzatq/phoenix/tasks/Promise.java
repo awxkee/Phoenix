@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 30.07.2017.
+ * Created by Rodion Bartoshik on 30.07.2017.
  */
 
 public class Promise extends TaskAlliance {

@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 04.06.2017.
+ * Created by Rodion Bartoshik on 04.06.2017.
  */
 
 class CompleteCompletionSource<PResult> implements TaskQueueService<PResult> {

@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 10.06.2017.
+ * Created by Rodion Bartoshik on 10.06.2017.
  */
 
 class CancelCompletionSource<PState> implements TaskQueueService<PState> {

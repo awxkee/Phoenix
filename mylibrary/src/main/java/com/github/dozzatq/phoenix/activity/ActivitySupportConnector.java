@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Created by Rodion Bartoshyk on 27.06.2017.
+ * Created by Rodion Bartoshik on 27.06.2017.
  */
 
 public class ActivitySupportConnector extends Fragment implements ActivitySupplierInterface {

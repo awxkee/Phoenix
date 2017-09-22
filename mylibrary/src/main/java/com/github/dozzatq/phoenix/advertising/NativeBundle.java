@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.advertising;
 import com.github.dozzatq.phoenix.tasks.Task;
 
 /**
- * Created by Rodion Bartoshyk on 04.07.2017.
+ * Created by Rodion Bartoshik on 04.07.2017.
  */
 
 class NativeBundle extends NativeTrace<NativeBundle> implements Prominence<NativeBundle>, Reflector {

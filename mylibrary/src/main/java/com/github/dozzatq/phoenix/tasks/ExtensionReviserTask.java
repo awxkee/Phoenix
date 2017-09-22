@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 27.05.2017.
+ * Created by Rodion Bartoshik on 27.05.2017.
  */
 
 class ExtensionReviserTask<PResult, PExtension> implements OnTaskSuccessListener<PResult>,

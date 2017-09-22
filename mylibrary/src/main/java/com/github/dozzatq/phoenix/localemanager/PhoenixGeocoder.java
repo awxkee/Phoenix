@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by Rodion Bartoshyk on 5/24/17.
+ * Created by Rodion Bartoshik on 5/24/17.
  */
 
 public class PhoenixGeocoder {
@@ -27,8 +27,24 @@ public class PhoenixGeocoder {
                     Address returnedAddress = addresses.get(0);
                     StringBuilder strReturnedAddress = new StringBuilder("");
 
-                    for (int i = 0; i < returnedAddress.getMaxAddressLineIndex(); i++) {
-                        strReturnedAddress.append(returnedAddress.getAddressLine(i)).append("\n");
+                    int countLines = returnedAddress.getMaxAddressLineIndex();
+
+                    // something strange error with address and 0 lines length !
+                    if (countLines==0)
+                        countLines = 1;
+
+                    for (int i = 0; i < countLines; i++) {
+                        try {
+                            strReturnedAddress.append(returnedAddress.getAddressLine(i));
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                        if (countLines>1 && countLines+1<i)
+                        {
+                            strReturnedAddress.append("\n");
+                        }
                     }
                     strAdd = strReturnedAddress.toString();
                 }

@@ -14,7 +14,7 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 
 /**
- * Created by Rodion Bartoshyk on 02.06.2017.
+ * Created by Rodion Bartoshik on 02.06.2017.
  */
 
 public class DeltaSnapshot {

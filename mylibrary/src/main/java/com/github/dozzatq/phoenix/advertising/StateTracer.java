@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.advertising;
 
 /**
- * Created by Rodion Bartoshyk on 04.07.2017.
+ * Created by Rodion Bartoshik on 04.07.2017.
  */
 
 interface StateTracer {

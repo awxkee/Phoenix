@@ -3,7 +3,7 @@ package com.github.dozzatq.phoenix.tasks;
 import java.util.concurrent.Callable;
 
 /**
- * Created by Rodion Bartoshyk on 10.06.2017.
+ * Created by Rodion Bartoshik on 10.06.2017.
  */
 
 public abstract class TaskCompletionSource<PTask> implements Callable<PTask> {

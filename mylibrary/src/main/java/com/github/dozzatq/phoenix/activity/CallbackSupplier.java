@@ -1,7 +1,7 @@
 package com.github.dozzatq.phoenix.activity;
 
 /**
- * Created by Rodion Bartoshyk on 30.06.2017.
+ * Created by Rodion Bartoshik on 30.06.2017.
  */
 
 public class CallbackSupplier<T> {

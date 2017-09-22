@@ -5,7 +5,7 @@ import com.github.dozzatq.phoenix.activity.StreetPolice;
 import java.util.concurrent.Executor;
 
 /**
- * Created by Rodion Bartoshyk on 04.06.2017.
+ * Created by Rodion Bartoshik on 04.06.2017.
  */
 
 class CenterAction {

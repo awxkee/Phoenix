@@ -14,7 +14,7 @@ import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
 /**
- * Created by Rodion Bartoshyk on 13.09.2017.
+ * Created by Rodion Bartoshik on 13.09.2017.
  */
 
 public class LinksOutlet {

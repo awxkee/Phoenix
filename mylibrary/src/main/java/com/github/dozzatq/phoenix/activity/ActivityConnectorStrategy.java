@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.support.v4.app.FragmentActivity;
 
 /**
- * Created by Rodion Bartoshyk on 27.06.2017.
+ * Created by Rodion Bartoshik on 27.06.2017.
  */
 
 public class ActivityConnectorStrategy implements ActivitySupplierInterface{

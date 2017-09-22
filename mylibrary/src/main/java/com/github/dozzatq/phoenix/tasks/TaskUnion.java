@@ -1,13 +1,15 @@
 package com.github.dozzatq.phoenix.tasks;
 
+import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 
 import java.util.Collection;
 
 /**
- * Created by Rodion Bartoshyk on 23.06.2017.
+ * Created by Rodion Bartoshik on 23.06.2017.
  */
 
+@AnyThread
 public class TaskUnion extends TaskAlliance{
 
     public TaskUnion(@NonNull TaskSource taskSource) {

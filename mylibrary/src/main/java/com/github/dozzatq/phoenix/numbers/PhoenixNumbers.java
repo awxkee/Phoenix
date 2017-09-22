@@ -1,5 +1,8 @@
 package com.github.dozzatq.phoenix.numbers;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -12,7 +15,7 @@ public class PhoenixNumbers {
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
-    public static Integer parseInt(String value) {
+    public static Integer parseInt(@Nullable String value) {
         if (value == null) {
             return 0;
         }
@@ -29,7 +32,7 @@ public class PhoenixNumbers {
         return val;
     }
 
-    public static Long parseLong(String value) {
+    public static Long parseLong(@Nullable String value) {
         if (value == null) {
             return 0L;
         }
@@ -46,7 +49,7 @@ public class PhoenixNumbers {
         return val;
     }
 
-    public static String parseIntToString(String value) {
+    public static String parseIntToString(@NonNull String value) {
         Matcher matcher = pattern.matcher(value);
         if (matcher.find()) {
             return matcher.group(0);
@@ -54,7 +57,7 @@ public class PhoenixNumbers {
         return null;
     }
 
-    public static String bytesToHex(byte[] bytes) {
+    public static String bytesToHex(@Nullable byte[] bytes) {
         if (bytes == null) {
             return "";
         }
@@ -68,7 +71,7 @@ public class PhoenixNumbers {
         return new String(hexChars);
     }
 
-    public static byte[] hexToBytes(String hex) {
+    public static byte[] hexToBytes(@Nullable String hex) {
         if (hex == null) {
             return null;
         }
@@ -80,7 +83,7 @@ public class PhoenixNumbers {
         return data;
     }
 
-    public static boolean isGoodPrime(byte[] prime, int g) {
+    public static boolean isGoodPrime(@NonNull byte[] prime, int g) {
         if (!(g >= 2 && g <= 7)) {
             return false;
         }
@@ -130,11 +133,11 @@ public class PhoenixNumbers {
         return !(!dhBI.isProbablePrime(30) || !dhBI2.isProbablePrime(30));
     }
 
-    public static boolean isGoodGaAndGb(BigInteger g_a, BigInteger p) {
+    public static boolean isGoodGaAndGb(@NonNull BigInteger g_a,@NonNull BigInteger p) {
         return !(g_a.compareTo(BigInteger.valueOf(1)) != 1 || g_a.compareTo(p.subtract(BigInteger.valueOf(1))) != -1);
     }
 
-    public static boolean arraysEquals(byte[] arr1, int offset1, byte[] arr2, int offset2) {
+    public static boolean arraysEquals(@Nullable byte[] arr1, int offset1,@Nullable byte[] arr2, int offset2) {
         if (arr1 == null || arr2 == null || offset1 < 0 || offset2 < 0 || arr1.length - offset1 != arr2.length - offset2 || arr1.length - offset1 < 0 || arr2.length - offset2 < 0) {
             return false;
         }
@@ -147,7 +150,7 @@ public class PhoenixNumbers {
         return result;
     }
 
-    public static byte[] computeSHA1(byte[] convertme, int offset, int len) {
+    public static byte[] computeSHA1(@NonNull byte[] convertme, int offset, int len) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             md.update(convertme, offset, len);
@@ -158,12 +161,11 @@ public class PhoenixNumbers {
         return new byte[20];
     }
 
-
-    public static byte[] computeSHA1(byte[] convertme) {
+    public static byte[] computeSHA1(@NonNull byte[] convertme) {
         return computeSHA1(convertme, 0, convertme.length);
     }
 
-    public static byte[] computeSHA256(byte[] convertme, int offset, int len) {
+    public static byte[] computeSHA256(@NonNull byte[] convertme, int offset, int len) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(convertme, offset, len);
@@ -174,8 +176,7 @@ public class PhoenixNumbers {
         return null;
     }
 
-
-    public static String md5(String md5) {
+    public static String md5(@Nullable String md5) {
         if (md5 == null) {
             return null;
         }

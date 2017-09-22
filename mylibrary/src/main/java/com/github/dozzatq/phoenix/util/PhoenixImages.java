@@ -7,7 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 
 /**
- * Created by Rodion Bartoshyk on 19.09.2017.
+ * Created by Rodion Bartoshik on 19.09.2017.
  */
 
 public class PhoenixImages {

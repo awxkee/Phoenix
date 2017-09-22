@@ -10,7 +10,7 @@ import java.util.ArrayDeque;
 import java.util.Iterator;
 
 /**
- * Created by Rodion Bartoshyk on 08.12.2016.
+ * Created by Rodion Bartoshik on 08.12.2016.
  */
 
 public abstract class NotificationHandler {

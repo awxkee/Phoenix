@@ -1,5 +1,7 @@
 package com.github.dozzatq.phoenix.tasks;
 
+import android.support.annotation.AnyThread;
+import android.support.annotation.GuardedBy;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayDeque;
@@ -8,9 +10,10 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by Rodion Bartoshyk on 30.05.2017.
+ * Created by Rodion Bartoshik on 30.05.2017.
  */
 
+@AnyThread
 public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, OnTaskFailureListener {
 
     int taskCount = 0;
@@ -62,10 +65,14 @@ public class TaskAlliance extends Task<Void> implements OnTaskSuccessListener, O
         task.addOnTaskFailureListener(this);
     }
 
+    @GuardedBy("mLock")
     ArrayDeque<Task> exceptedTask = new ArrayDeque<>();
+    @GuardedBy("mLock")
     ArrayDeque<Task> successTask = new ArrayDeque<>();
 
     Exception exception;
+
+    @GuardedBy("mLock")
     private volatile boolean hasException;
 
     boolean hasExcepted()

@@ -3,6 +3,7 @@ package com.github.dozzatq.phoenix.kernel;
 import android.content.Context;
 import android.support.annotation.GuardedBy;
 import android.support.annotation.NonNull;
+import android.support.annotation.UiThread;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by Rodion Bartoshyk on 01.08.2017.
+ * Created by Rodion Bartoshik on 01.08.2017.
  */
 
 class FCMSchedulerStrategy extends FCMTask {
@@ -44,6 +45,7 @@ class FCMSchedulerStrategy extends FCMTask {
         }
     }
 
+    @UiThread
     @Override
     public FCMTask run(@NonNull Context context, @NonNull Map<String, String> dataMap)
     {

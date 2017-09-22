@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import java.util.Map;
 
 /**
- * Created by Rodion Bartoshyk on 01.08.2017.
+ * Created by Rodion Bartoshik on 01.08.2017.
  */
 
 public abstract class FCMScheduler {

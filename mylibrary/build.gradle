@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 74
-        versionName "1.7.3"
+        versionCode 77
+        versionName "1.7.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
         testHandleProfiling true
@@ -37,11 +37,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    api "com.google.firebase:firebase-invites:11.2.2"
+    api "com.google.firebase:firebase-invites:11.4.0"
     implementation 'com.android.support:design:26.1.0'
     implementation 'com.android.volley:volley:1.0.0'
     implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'com.github.bumptech.glide:glide:4.1.1'
-    api 'com.firebase:firebase-jobdispatcher:0.8.1'
     androidTestCompile 'org.testng:testng:6.9.6'
 }

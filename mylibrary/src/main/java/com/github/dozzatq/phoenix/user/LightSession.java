@@ -10,7 +10,7 @@ import com.github.dozzatq.phoenix.util.PhoenixDeviceIdGenerator;
 import java.util.Locale;
 
 /**
- * Created by Rodion Bartoshyk on 12.09.2017.
+ * Created by Rodion Bartoshik on 12.09.2017.
  */
 
 public class LightSession {

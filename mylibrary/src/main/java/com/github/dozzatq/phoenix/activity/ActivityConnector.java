@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Created by Rodion Bartoshyk on 27.06.2017.
+ * Created by Rodion Bartoshik on 27.06.2017.
  */
 
 public class ActivityConnector extends Fragment implements ActivitySupplierInterface{
@@ -29,7 +29,7 @@ public class ActivityConnector extends Fragment implements ActivitySupplierInter
     {
         ActivityConnector activityConnector;
         WeakReference<ActivityConnector> connectorWeakReference;
-        if ( ( connectorWeakReference= activityWeakReferenceWeakHashMap.get(activity) )!=null && (activityConnector = connectorWeakReference.get())!=null )
+        if ( ( connectorWeakReference = activityWeakReferenceWeakHashMap.get(activity) )!=null && (activityConnector = connectorWeakReference.get())!=null )
             return activityConnector;
         else {
             try {
@@ -79,7 +79,7 @@ public class ActivityConnector extends Fragment implements ActivitySupplierInter
 
         for (Map.Entry<String, ActivitySupplier> entry : this.lifecycleCallbacks.entrySet()) {
             Map.Entry entry1;
-            ((ActivitySupplier) (entry1 = (Map.Entry) entry).getValue())
+            ((ActivitySupplier) (entry1 = entry).getValue())
                     .onCreate(bundle != null ? bundle.getBundle((String) entry1.getKey()) : null);
         }
     }
@@ -147,7 +147,7 @@ public class ActivityConnector extends Fragment implements ActivitySupplierInter
         this.activityState = 5;
 
         for (ActivitySupplier supplier : this.lifecycleCallbacks.values()) {
-            ((ActivitySupplier) supplier).onDestroy();
+            supplier.onDestroy();
         }
 
     }
