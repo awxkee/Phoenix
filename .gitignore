@@ -6,13 +6,9 @@
 .DS_Store
 /build
 /captures
-*.gpg
 gradle.properties
 /.idea
 /gradle
-*.asc
-maven_push.gradle
-gradle-app.setting
 gradle/wrapper/gradle-wrapper.properties
 .gradletasknamecache
 gradle-wrapper.jar

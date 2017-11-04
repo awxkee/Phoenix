@@ -194,29 +194,6 @@ public class Phoenix {
         return new PhoenixUtilities();
     }
 
-    public Uri getExposedUri(@NonNull Uri toExpose)
-    {
-        File file = new File(toExpose.getPath());
-        try {
-            return FileProvider.getUriForFile(getContext(), getPackageName() + ".fileprovider", file);
-        }
-        catch (IllegalArgumentException e)
-        {
-            return toExpose;
-        }
-    }
-
-    public Uri getExposedUri(@NonNull File toExpose)
-    {
-        try {
-            return FileProvider.getUriForFile(getContext(), getPackageName() + ".fileprovider", toExpose);
-        }
-        catch (IllegalArgumentException e)
-        {
-            return Uri.parse(toExpose.toString());
-        }
-    }
-
     public Phoenix stopService(Intent intentService)
     {
         getContext().stopService(intentService);
